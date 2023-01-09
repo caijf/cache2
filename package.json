@@ -1,0 +1,20 @@
+{
+  "name": "cache2",
+  "version": "0.0.0",
+  "description": "Javascript 缓存管理，支持过期时间，最大缓存数量",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caijf/cache2.git"
+  },
+  "keywords": [],
+  "author": "caijf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/caijf/cache2/issues"
+  },
+  "homepage": "https://github.com/caijf/cache2#readme"
+}
