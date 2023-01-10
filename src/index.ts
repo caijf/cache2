@@ -21,9 +21,9 @@ type BaseOptions = {
 // 高级配置，支持自定义设置 key 和 storage
 // 直接使用内存缓存，不需要用到 replacer reviver
 type AdvancedOptions = {
-  storage: TStorage; // 数据存储器，支持自定义。可设置为 localStorage/sessionStorage 。 。
-  replacer?: JSON_Stringify_replacer; // 同 JSON.stringify 的 replacer
-  reviver?: JSON_Parse_reviver; // 同 JSON.parse 的 reviver
+  storage: TStorage; // 自定义数据存储器。支持 localStorage/sessionStorage 。
+  replacer?: JSON_Stringify_replacer; // 仅在自定义数据存储器后生效。同 JSON.stringify 的 replacer
+  reviver?: JSON_Parse_reviver; // 仅在自定义数据存储器后生效。同 JSON.parse 的 reviver
 };
 
 class Cache2<ValueType = any> {
@@ -32,7 +32,7 @@ class Cache2<ValueType = any> {
   private _tempCacheValues?: CacheData<ValueType>[]; // 临时存储缓存数据，提高遍历操作性能。
 
   constructor(options?: BaseOptions); // 基础配置，默认使用内存缓存
-  constructor(key: string, options: BaseOptions & AdvancedOptions); // 高级配置，需要设置key和storage。该方式适用于 localStorage 或 sessionStorage 。
+  constructor(key: string, options: BaseOptions & Partial<AdvancedOptions>); // 高级配置，需要设置key和storage。该方式适用于 localStorage 或 sessionStorage 。
   constructor(key?: any, options?: any) {
     let k: string | undefined, opts: (BaseOptions & AdvancedOptions) | undefined;
     if (typeof key === 'string') {
@@ -157,7 +157,7 @@ class Cache2<ValueType = any> {
     return values;
   }
 
-  // 从缓存中获取全部保存的值。
+  // 从缓存中获取全部保存的值。返回一个具有键值对的对象。
   getAll() {
     const values: Record<string, ValueType> = {};
     this.cacheValues.forEach((item) => {
@@ -251,12 +251,13 @@ class Cache2<ValueType = any> {
     const currIndex = newCacheValues.findIndex((item) => item.k === key);
     if (currIndex !== -1) {
       ret = newCacheValues[currIndex].v;
+      newCacheValues.splice(currIndex, 1);
       this.setCacheValues(newCacheValues);
     }
     return ret;
   }
 
-  // 重新定义一个键的 ttl 。如果找到并更新成功，则返回 true。
+  // 重新定义一个键的 ttl 。如果找到并更新成功，则返回 true 。
   ttl(key: string, ttl: number) {
     let ret = false;
     const newCacheValues = this.cacheValues;
@@ -264,6 +265,7 @@ class Cache2<ValueType = any> {
 
     if (currItem) {
       ret = true;
+      currItem.t = Date.now();
       currItem.ttl = ttl;
       this.setCacheValues(newCacheValues);
     }
