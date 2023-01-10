@@ -76,6 +76,9 @@ class Cache2<ValueType = any> {
   private get _stdTTL() {
     return this.options.stdTTL;
   }
+  private isLimited(len: number) {
+    return this._max > -1 && len >= this._max;
+  }
   private parse(value: any): CacheData<ValueType>[] {
     // 缓存在内存不需要转换
     if (this._storage === memoryStorage) {
@@ -120,19 +123,17 @@ class Cache2<ValueType = any> {
 
     // 根据过期时间排序，临近过期的排在前面，先添加的排在前面。然后再反转，这样后面可以直接使用 pop/push
     if (this._maxStrategy === 'replaced') {
-      cacheValues
-        .sort((a, b) => {
-          const ttl_a = this._getTtl(a);
-          const ttl_b = this._getTtl(b);
-          if (ttl_a === ttl_b) {
-            return 0;
-          } else if (ttl_b === 0 || ttl_a === 0) {
-            return ttl_b === 0 ? -1 : 1;
-          } else {
-            return ttl_a - ttl_b;
-          }
-        })
-        .reverse();
+      cacheValues.sort((a, b) => {
+        const ttl_a = this._getTtl(a);
+        const ttl_b = this._getTtl(b);
+        if (ttl_a === ttl_b) {
+          return 0;
+        } else if (ttl_b === 0 || ttl_a === 0) {
+          return ttl_b === 0 ? -1 : 1;
+        } else {
+          return ttl_a - ttl_b;
+        }
+      });
     }
     return cacheValues;
   }
@@ -177,16 +178,18 @@ class Cache2<ValueType = any> {
     if (currIndex !== -1) {
       // 数据已存在，删除数据
       newCacheValues.splice(currIndex, 1);
-    } else {
-      // 数据量限制
-      const isLimited = this._max > -1 && newCacheValues.length > this._max;
-
-      if (isLimited) {
-        if (this._maxStrategy === 'limited') {
-          return false;
-        } else if (this._maxStrategy === 'replaced') {
-          // 过期优先，再则先进先出，再反转。所以采用 pop/push 。
-          newCacheValues.pop();
+    } else if (this.isLimited(newCacheValues.length)) {
+      // 数据量限制，不同策略处理
+      if (this._maxStrategy === 'limited') {
+        return false;
+      } else if (this._maxStrategy === 'replaced') {
+        // 过期优先，再则先进先出。
+        // 由于要删除第一项，所以取最后一项替换第一项，性能更优。
+        if (newCacheValues.length > 1) {
+          const last = newCacheValues.pop() as CacheData<ValueType>;
+          newCacheValues[0] = last;
+        } else {
+          newCacheValues.shift();
         }
       }
     }
