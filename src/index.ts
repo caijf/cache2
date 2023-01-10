@@ -119,19 +119,21 @@ class Cache2<ValueType = any> {
   private get sortCacheValues() {
     const cacheValues = this.cacheValues;
 
-    // 根据过期时间排序，临近过期的排在前面，先添加的排在前面
+    // 根据过期时间排序，临近过期的排在前面，先添加的排在前面。然后再反转，这样后面可以直接使用 pop/push
     if (this._maxStrategy === 'replaced') {
-      cacheValues.sort((a, b) => {
-        const ttl_a = this._getTtl(a);
-        const ttl_b = this._getTtl(b);
-        if (ttl_a === ttl_b) {
-          return 0;
-        } else if (ttl_b === 0 || ttl_a === 0) {
-          return ttl_b === 0 ? -1 : 1;
-        } else {
-          return ttl_a - ttl_b;
-        }
-      });
+      cacheValues
+        .sort((a, b) => {
+          const ttl_a = this._getTtl(a);
+          const ttl_b = this._getTtl(b);
+          if (ttl_a === ttl_b) {
+            return 0;
+          } else if (ttl_b === 0 || ttl_a === 0) {
+            return ttl_b === 0 ? -1 : 1;
+          } else {
+            return ttl_a - ttl_b;
+          }
+        })
+        .reverse();
     }
     return cacheValues;
   }
@@ -169,23 +171,25 @@ class Cache2<ValueType = any> {
   // 设置键值对。设置成功返回 true 。
   set(key: string, value: ValueType, ttl?: number) {
     const newCacheValues = this._tempCacheValues || this.sortCacheValues;
+    const currIndex = newCacheValues.findIndex((item) => item.k === key);
+    const obj = { k: key, v: value, t: Date.now(), ttl };
     const isLimited = this._max > -1 && newCacheValues.length > this._max;
 
-    if (isLimited) {
-      if (this._maxStrategy === 'limited') {
-        return false;
-      } else if (this._maxStrategy === 'replaced') {
-        // 过期优先，再则先进先出
-        newCacheValues.shift();
+    // 数据已存在，更新数据
+    if (currIndex !== -1) {
+      newCacheValues.splice(currIndex, 1, obj);
+    } else {
+      // 如果数据过期
+      if (isLimited) {
+        if (this._maxStrategy === 'limited') {
+          return false;
+        } else if (this._maxStrategy === 'replaced') {
+          // 过期优先，再则先进先出，再反转。所以采用 pop/push 。
+          newCacheValues.pop();
+          newCacheValues.push(obj);
+        }
       }
     }
-
-    newCacheValues.push({
-      k: key,
-      v: value,
-      t: Date.now(),
-      ttl
-    });
     this.setCacheValues(newCacheValues);
     return true;
   }
