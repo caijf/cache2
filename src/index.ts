@@ -168,9 +168,8 @@ class Cache2<ValueType = any> {
     return values;
   }
 
-  // 设置键值对。设置成功返回 true 。
+  // 设置键值对。设置成功返回 true 。如果是更新已存在的键值，数据有效期将重新计算。
   set(key: string, value: ValueType, ttl?: number) {
-    // 该排序数据不能使用缓存，可能导致结果异常。如添加的数据中有过期时间更早的，需要被替换掉。
     const newCacheValues = this.sortCacheValues;
     const currIndex = newCacheValues.findIndex((item) => item.k === key);
     const obj = { k: key, v: value, t: Date.now(), ttl };
@@ -198,8 +197,10 @@ class Cache2<ValueType = any> {
     return true;
   }
 
-  // 设置多个键值对。设置成功返回 true 。
+  // 设置多个键值对。设置成功返回 true 。如果是更新已存在的键值，数据有效期将重新计算。
   mset(values: { key: string; value: ValueType; ttl?: number }[]) {
+    // 遍历操作也不能缓存当前缓存数据值。该数据需要排序不能使用缓存，否则可能导致结果异常。如：添加的数据中有过期时间更早的，需要被替换掉。
+    // 该处不能使用数组的 some 方法，不能因为某个失败，而导致其他就不在更新。
     let result = true;
     values.forEach((item) => {
       const itemSetResult = this.set(item.key, item.value, item.ttl);
@@ -267,7 +268,7 @@ class Cache2<ValueType = any> {
     return ret;
   }
 
-  // 重新定义一个键的 ttl 。如果找到并更新成功，则返回 true 。
+  // 重新定义一个键的 ttl 。如果找到并更新成功，则返回 true ，数据有效期将重新计算。
   ttl(key: string, ttl: number) {
     let ret = false;
     const newCacheValues = this.cacheValues;

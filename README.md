@@ -72,7 +72,7 @@ const myCache = new Cache2();
 
 ### set(key: string, value: any, ttl?: number)
 
-设置键值对。设置成功返回 `true` 。
+设置键值对。设置成功返回 `true` 。如果是更新已存在的键值，数据有效期将重新计算。
 
 ```typescript
 const obj = { foo: 'bar', baz: 42 };
@@ -83,7 +83,7 @@ myCache.set('myKey', obj, 5 * 60 * 1000);
 
 ### mset(values: {key: string, value: any, ttl?: number}[])
 
-设置多个键值对。设置成功返回 `true` 。
+设置多个键值对。设置成功返回 `true` 。如果是更新已存在的键值，数据有效期将重新计算。
 
 ```typescript
 const obj = { foo: 'bar', baz: 42 };
@@ -174,7 +174,7 @@ myCache.clear();
 
 ### ttl(key: string, ttl: number)
 
-重新定义一个键的 `ttl` 。如果找到并更新成功，则返回 `true` 。
+重新定义一个键的 `ttl` 。如果找到并更新成功，则返回 `true` ，数据有效期将重新计算。
 
 ```typescript
 const obj = { foo: 'bar', baz: 42 };
