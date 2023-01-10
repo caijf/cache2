@@ -22,12 +22,14 @@ type Options = {
 }
 
 class CacheCalss<ValueType = any> {
-  private options: Options;
-  private cacheKey: string;
+  private options!: Options;
+  private cacheKey!: string;
+  private _tempCacheValues?: CacheData<ValueType>[]; // 临时存储缓存数据，提高遍历操作性能。
 
   constructor(key?: string, options?: Partial<Options>); // 该方式适用于 localStorage 或 sessionStorage
   constructor(options?: Partial<Options>); // 适用于内存缓存
   constructor(key?: any, options?: Partial<Options>) {
+    // 没有使用 new 操作符
     if (!(this instanceof CacheCalss)) {
       return new CacheCalss(key, options);
     }
@@ -89,14 +91,20 @@ class CacheCalss<ValueType = any> {
     let values = this.parse(this._storage.getItem(this.cacheKey)) || [];
     const now = Date.now();
 
+    // 过滤过期数据
     values = values.filter(item => {
       const ttl = this._getTtl(item);
       return ttl === 0 || ttl > now;
     });
 
-    // 根据过期时间排序
+    return values;
+  }
+  private get sortCacheValues() {
+    const cacheValues = this.cacheValues;
+
+    // 根据过期时间排序，临近过期的排在前面，先添加的排在前面
     if (this.options.maxStrategy === 'replaced') {
-      values.sort((a, b) => {
+      cacheValues.sort((a, b) => {
         const ttl_a = this._getTtl(a);
         const ttl_b = this._getTtl(b);
         if (ttl_a === ttl_b) {
@@ -108,8 +116,7 @@ class CacheCalss<ValueType = any> {
         }
       });
     }
-
-    return values;
+    return cacheValues;
   }
   private setCacheValues(values: CacheData<ValueType>[]) {
     this._storage.setItem(this.cacheKey, this.stringify(values));
@@ -144,7 +151,7 @@ class CacheCalss<ValueType = any> {
 
   // 设置键值对。设置成功返回 true 。
   set(key: string, value: ValueType, ttl?: number) {
-    const newCacheValues = this.cacheValues;
+    const newCacheValues = this._tempCacheValues || this.sortCacheValues;
     const isLimited = this._max > -1 && newCacheValues.length > this._max;
 
     if (this.options.maxStrategy === 'limited') {
@@ -168,9 +175,12 @@ class CacheCalss<ValueType = any> {
 
   // 设置多个键值对。设置成功返回 true 。
   mset(values: { key: string; value: ValueType; ttl?: number; }[]) {
-    return values.some(item => {
+    this._tempCacheValues = this.sortCacheValues;
+    const result = values.some(item => {
       return !this.set(item.key, item.value, item.ttl);
     });
+    this._tempCacheValues = undefined;
+    return result;
   }
 
   // 删除某个键。返回已删除条目的数量。删除永远不会失败。
