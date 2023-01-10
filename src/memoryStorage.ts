@@ -1,7 +1,6 @@
-let cache: Record<string, any> = {};
+const cache: Record<string, any> = {};
 
 const memoryStorage = {
-  __memory__: true,
   getItem(key: string) {
     return cache[key] || null;
   },
@@ -10,9 +9,6 @@ const memoryStorage = {
   },
   removeItem(key: string) {
     delete cache[key];
-  },
-  clear() {
-    cache = {};
   }
 }
 

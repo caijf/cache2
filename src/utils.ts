@@ -1,4 +1,4 @@
-export type TStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem' | 'clear'> & Record<string, any>;
+export type TStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> & Record<string, any>;
 
 // 随机字符串
 function randomString() {
@@ -16,7 +16,7 @@ export function uniqueId(prefix = 'cache2') {
 // 是否支持 storage
 export function isStorageSupport(storage: TStorage) {
   try {
-    const isSupport = typeof storage === 'object' && storage !== null && !!storage.setItem && !!storage.getItem && !!storage.removeItem && !!storage.clear;
+    const isSupport = typeof storage === 'object' && storage !== null && !!storage.setItem && !!storage.getItem && !!storage.removeItem;
     if (isSupport) {
       const uniqueKey = uniqueId();
       storage.setItem(uniqueKey, '1');

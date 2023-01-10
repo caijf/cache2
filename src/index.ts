@@ -13,9 +13,9 @@ type CacheData<ValueType = any> = {
 
 type Options = {
   max: number; // 最大存储数据量。-1表示无限制。
+  maxStrategy?: 'replaced' | 'limited'; // 当超过最大存储限制时的缓存策略，默认 limited 。 replaced 表示优先删除快过期的数据，如果过期时间相同，则按照先入先出删除缓存数据。 limited 表示不存入数据返回 false
   stdTTL: number; // 数据存活时间，单位为毫秒。0表示无期限。
-  storage: TStorage; // 数据存储器，支持自定义。可设置为 localStorage/sessionStorage 。
-  maxStrategy?: 'replaced' | 'limited'; // 当超过最大存储限制时的缓存策略，默认 limited 。 replaced 表示优先删除快过期的数据，如果过期时间相同，则按照先入先出删除缓存数据。 limited 表示不存入数据返回 false 。
+  storage: TStorage; // 数据存储器，支持自定义。可设置为 localStorage/sessionStorage 。 。
 
   replacer?: JSON_Stringify_replacer; // 同 JSON.stringify 的 replacer
   reviver?: JSON_Parse_reviver; // 同 JSON.parse 的 reviver
@@ -64,7 +64,7 @@ class CacheCalss<ValueType = any> {
   private get _stdTTL() { return this.options.stdTTL; }
   private parse(value: any): CacheData<ValueType>[] {
     // 缓存在内存不需要转换
-    if (this._storage.__memory__) {
+    if (this._storage === memoryStorage) {
       return value;
     }
     try {
@@ -75,7 +75,7 @@ class CacheCalss<ValueType = any> {
   }
   private stringify(value: any) {
     // 缓存在内存不需要转换
-    if (this._storage.__memory__) {
+    if (this._storage === memoryStorage) {
       return value;
     }
     return value === undefined || typeof value === "function" ? value + '' : JSON.stringify(value, this.options.replacer);
@@ -129,10 +129,10 @@ class CacheCalss<ValueType = any> {
 
   // 从缓存中获取多个保存的值。如果未找到或已过期，则返回一个空对象。如果找到该值，它会返回一个具有键值对的对象。
   mget(keys: string[]) {
-    const originCacheValues = this.cacheValues;
+    const cacheValues = this.cacheValues;
     const values: Record<string, ValueType> = {};
     keys.forEach(key => {
-      const val = originCacheValues.find(item => item.k === key)?.v;
+      const val = cacheValues.find(item => item.k === key)?.v;
       if (val) {
         values[key] = val;
       }
@@ -214,6 +214,7 @@ class CacheCalss<ValueType = any> {
   // 删除当前所有缓存。
   clear() {
     this.setCacheValues([]);
+    this._storage.removeItem(this.cacheKey);
   }
 
   // 返回所有现有键的数组。
