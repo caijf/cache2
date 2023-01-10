@@ -1,6 +1,6 @@
 {
   "name": "cache2",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "一个简单的 Javascript 缓存管理，支持浏览器端和 node 端。",
   "scripts": {
     "test": "echo \"Error: no test specified\"",
