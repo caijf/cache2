@@ -1,7 +1,7 @@
 {
   "name": "cache2",
   "version": "0.0.2",
-  "description": "Javascript 缓存管理，支持过期时间，最大缓存数量",
+  "description": "一个简单的 Javascript 缓存管理，支持浏览器端和 node 端。",
   "scripts": {
     "test": "echo \"Error: no test specified\"",
     "build": "rm -rf dist && npm run build:module && npm run build:umd && npm run build:types",
