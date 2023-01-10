@@ -171,13 +171,13 @@ class Cache2<ValueType = any> {
     const newCacheValues = this._tempCacheValues || this.sortCacheValues;
     const isLimited = this._max > -1 && newCacheValues.length > this._max;
 
-    if (this._maxStrategy === 'limited') {
-      if (isLimited) {
+    if (isLimited) {
+      if (this._maxStrategy === 'limited') {
         return false;
+      } else if (this._maxStrategy === 'replaced') {
+        // 过期优先，再则先进先出
+        newCacheValues.shift();
       }
-    } else if (this._maxStrategy === 'replaced') {
-      // 过期优先，再则先进先出
-      newCacheValues.shift();
     }
 
     newCacheValues.push({
