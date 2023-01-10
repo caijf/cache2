@@ -14,8 +14,8 @@ export const commonConfig = {
     typescript({
       include: ['src/**/*'],
       tsconfig: './tsconfig.json'
-    }),
-  ],
+    })
+  ]
 };
 
 const config: RollupOptions = {
@@ -24,15 +24,15 @@ const config: RollupOptions = {
     {
       format: 'cjs',
       file: `${outputFilePrefix}.cjs.js`,
-      exports: 'named',
+      exports: 'named'
     },
     {
       format: 'es',
       file: `${outputFilePrefix}.esm.js`,
-      exports: 'named',
-    },
+      exports: 'named'
+    }
   ],
-  external: ['tslib'],
+  external: ['tslib']
 };
 
 export default config;

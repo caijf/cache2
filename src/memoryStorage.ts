@@ -10,6 +10,6 @@ const memoryStorage = {
   removeItem(key: string) {
     delete cache[key];
   }
-}
+};
 
 export default memoryStorage;

@@ -1,15 +1,8 @@
 {
-  "include": [
-    "src/**/*",
-    "rollup.config.ts",
-    "rollup.umd.config.ts"
-  ],
+  "include": ["src/**/*", "rollup.config.ts", "rollup.umd.config.ts"],
   "compilerOptions": {
     "target": "ES5",
-    "lib": [
-      "DOM",
-      "ESNext"
-    ],
+    "lib": ["DOM", "ESNext"],
     "module": "ESNext",
     "moduleResolution": "node",
     "types": [],

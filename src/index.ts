@@ -1,5 +1,5 @@
-import memoryStorage from "./memoryStorage";
-import { isStorageSupport, uniqueId, TStorage } from "./utils";
+import memoryStorage from './memoryStorage';
+import { isStorageSupport, uniqueId, TStorage } from './utils';
 
 type JSON_Parse_reviver = (this: any, key: string, value: any) => any;
 type JSON_Stringify_replacer = JSON_Parse_reviver;
@@ -9,14 +9,14 @@ type CacheData<ValueType = any> = {
   v: ValueType;
   t: number;
   ttl?: number;
-}
+};
 
 // 基础配置，不需要设置 key 和 storage
 type BaseOptions = {
   max?: number; // 最大存储数据量，默认-1。-1表示无限制。
   maxStrategy?: 'replaced' | 'limited'; // 当超过最大存储限制时的缓存策略，默认 'replaced' 。 replaced 表示优先删除快过期的数据，如果过期时间相同，则按照先入先出删除缓存数据。 limited 表示不存入数据返回 false
   stdTTL?: number; // 数据存活时间，单位为毫秒，默认0。0表示无期限。
-}
+};
 
 // 高级配置，支持自定义设置 key 和 storage
 // 直接使用内存缓存，不需要用到 replacer reviver
@@ -24,7 +24,7 @@ type AdvancedOptions = {
   storage: TStorage; // 数据存储器，支持自定义。可设置为 localStorage/sessionStorage 。 。
   replacer?: JSON_Stringify_replacer; // 同 JSON.stringify 的 replacer
   reviver?: JSON_Parse_reviver; // 同 JSON.parse 的 reviver
-}
+};
 
 class Cache2<ValueType = any> {
   private options!: Required<BaseOptions> & AdvancedOptions;
@@ -65,10 +65,18 @@ class Cache2<ValueType = any> {
     // }
   }
 
-  private get _storage() { return this.options.storage; }
-  private get _max() { return this.options.max; }
-  private get _maxStrategy() { return this.options.maxStrategy; }
-  private get _stdTTL() { return this.options.stdTTL; }
+  private get _storage() {
+    return this.options.storage;
+  }
+  private get _max() {
+    return this.options.max;
+  }
+  private get _maxStrategy() {
+    return this.options.maxStrategy;
+  }
+  private get _stdTTL() {
+    return this.options.stdTTL;
+  }
   private parse(value: any): CacheData<ValueType>[] {
     // 缓存在内存不需要转换
     if (this._storage === memoryStorage) {
@@ -85,7 +93,9 @@ class Cache2<ValueType = any> {
     if (this._storage === memoryStorage) {
       return value;
     }
-    return value === undefined || typeof value === "function" ? value + '' : JSON.stringify(value, this.options.replacer);
+    return value === undefined || typeof value === 'function'
+      ? value + ''
+      : JSON.stringify(value, this.options.replacer);
   }
   private _getTtl(data: CacheData<ValueType>) {
     const ttl = typeof data.ttl === 'undefined' ? this._stdTTL : data.ttl;
@@ -99,7 +109,7 @@ class Cache2<ValueType = any> {
     const now = Date.now();
 
     // 过滤过期数据
-    values = values.filter(item => {
+    values = values.filter((item) => {
       const ttl = this._getTtl(item);
       return ttl === 0 || ttl > now;
     });
@@ -131,15 +141,15 @@ class Cache2<ValueType = any> {
 
   // 从缓存中获取保存的值。如果未找到或已过期，则返回 undefined 。如果找到该值，则返回该值。
   get(key: string) {
-    return this.cacheValues.find(item => item.k === key)?.v;
+    return this.cacheValues.find((item) => item.k === key)?.v;
   }
 
   // 从缓存中获取多个保存的值。如果未找到或已过期，则返回一个空对象。如果找到该值，它会返回一个具有键值对的对象。
   mget(keys: string[]) {
     const cacheValues = this.cacheValues;
     const values: Record<string, ValueType> = {};
-    keys.forEach(key => {
-      const val = cacheValues.find(item => item.k === key)?.v;
+    keys.forEach((key) => {
+      const val = cacheValues.find((item) => item.k === key)?.v;
       if (val) {
         values[key] = val;
       }
@@ -150,7 +160,7 @@ class Cache2<ValueType = any> {
   // 从缓存中获取全部保存的值。
   getAll() {
     const values: Record<string, ValueType> = {};
-    this.cacheValues.forEach(item => {
+    this.cacheValues.forEach((item) => {
       values[item.k] = item.v;
     });
     return values;
@@ -181,9 +191,9 @@ class Cache2<ValueType = any> {
   }
 
   // 设置多个键值对。设置成功返回 true 。
-  mset(values: { key: string; value: ValueType; ttl?: number; }[]) {
+  mset(values: { key: string; value: ValueType; ttl?: number }[]) {
     this._tempCacheValues = this.sortCacheValues;
-    const result = values.some(item => {
+    const result = values.some((item) => {
       return !this.set(item.key, item.value, item.ttl);
     });
     this._tempCacheValues = undefined;
@@ -193,7 +203,7 @@ class Cache2<ValueType = any> {
   // 删除某个键。返回已删除条目的数量。删除永远不会失败。
   del(key: string) {
     let count = 0;
-    const newCacheValues = this.cacheValues.filter(item => {
+    const newCacheValues = this.cacheValues.filter((item) => {
       if (item.k === key) {
         count += 1;
         return false;
@@ -207,7 +217,7 @@ class Cache2<ValueType = any> {
   // 删除多个键。返回已删除条目的数量。删除永远不会失败。
   mdel(keys: string[]) {
     let count = 0;
-    const newCacheValues = this.cacheValues.filter(item => {
+    const newCacheValues = this.cacheValues.filter((item) => {
       if (keys.indexOf(item.k) > -1) {
         count += 1;
         return false;
@@ -226,19 +236,19 @@ class Cache2<ValueType = any> {
 
   // 返回所有现有键的数组。
   keys() {
-    return this.cacheValues.map(item => item.k);
+    return this.cacheValues.map((item) => item.k);
   }
 
   // 当前缓存是否包含某个键。
   has(key: string) {
-    return !!this.cacheValues.find(item => item.k === key);
+    return !!this.cacheValues.find((item) => item.k === key);
   }
 
   // 获取缓存值并从缓存中删除键。
   take(key: string) {
     let ret: ValueType | undefined;
     const newCacheValues = this.cacheValues;
-    const currIndex = newCacheValues.findIndex(item => item.k === key);
+    const currIndex = newCacheValues.findIndex((item) => item.k === key);
     if (currIndex !== -1) {
       ret = newCacheValues[currIndex].v;
       this.setCacheValues(newCacheValues);
@@ -250,14 +260,14 @@ class Cache2<ValueType = any> {
   ttl(key: string, ttl: number) {
     let ret = false;
     const newCacheValues = this.cacheValues;
-    const currItem = newCacheValues.find(item => item.k === key);
+    const currItem = newCacheValues.find((item) => item.k === key);
 
     if (currItem) {
       ret = true;
       currItem.ttl = ttl;
       this.setCacheValues(newCacheValues);
     }
-    return true
+    return ret;
   }
 
   // 获取某个键的 ttl 。
@@ -265,7 +275,7 @@ class Cache2<ValueType = any> {
   // 如果 ttl 为 0 ，返回 0 。
   // 否则返回一个以毫秒为单位的时间戳，表示键值将过期的时间。
   getTtl(key: string) {
-    const currItem = this.cacheValues.find(item => item.k === key);
+    const currItem = this.cacheValues.find((item) => item.k === key);
     if (currItem) {
       return this._getTtl(currItem);
     }

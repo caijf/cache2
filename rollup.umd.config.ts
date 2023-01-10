@@ -12,7 +12,7 @@ const config: RollupOptions = {
       file: `${outputFilePrefix}.js`,
       exports: 'default',
       name: globalVariableName,
-      sourcemap: true,
+      sourcemap: true
     },
     {
       format: 'umd',
@@ -20,9 +20,9 @@ const config: RollupOptions = {
       exports: 'default',
       name: globalVariableName,
       sourcemap: true,
-      plugins: [terser()],
-    },
-  ],
+      plugins: [terser()]
+    }
+  ]
 };
 
 export default config;
