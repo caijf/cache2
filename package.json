@@ -1,6 +1,6 @@
 {
   "name": "cache2",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Javascript 缓存管理，支持过期时间，最大缓存数量",
   "scripts": {
     "test": "echo \"Error: no test specified\"",
