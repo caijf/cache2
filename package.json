@@ -1,9 +1,9 @@
 {
   "name": "cache2",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Javascript 缓存管理，支持过期时间，最大缓存数量",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\"",
     "build": "rm -rf dist && npm run build:module && npm run build:umd && npm run build:types",
     "build:module": "rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "build:umd": "rollup --config rollup.umd.config.ts --configPlugin @rollup/plugin-typescript",
