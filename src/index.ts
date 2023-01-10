@@ -173,22 +173,23 @@ class Cache2<ValueType = any> {
     const newCacheValues = this._tempCacheValues || this.sortCacheValues;
     const currIndex = newCacheValues.findIndex((item) => item.k === key);
     const obj = { k: key, v: value, t: Date.now(), ttl };
-    const isLimited = this._max > -1 && newCacheValues.length > this._max;
 
     // 数据已存在，更新数据
     if (currIndex !== -1) {
       newCacheValues.splice(currIndex, 1, obj);
     } else {
-      // 如果数据过期
+      // 数据量限制
+      const isLimited = this._max > -1 && newCacheValues.length > this._max;
+
       if (isLimited) {
         if (this._maxStrategy === 'limited') {
           return false;
         } else if (this._maxStrategy === 'replaced') {
           // 过期优先，再则先进先出，再反转。所以采用 pop/push 。
           newCacheValues.pop();
-          newCacheValues.push(obj);
         }
       }
+      newCacheValues.push(obj);
     }
     this.setCacheValues(newCacheValues);
     return true;
