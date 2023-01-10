@@ -29,7 +29,6 @@ type AdvancedOptions = {
 class Cache2<ValueType = any> {
   private options!: Required<BaseOptions> & AdvancedOptions;
   private cacheKey!: string;
-  private _tempCacheValues?: CacheData<ValueType>[]; // 临时存储缓存数据，提高遍历操作性能。
 
   constructor(options?: BaseOptions); // 基础配置，默认使用内存缓存
   constructor(key: string, options: BaseOptions & Partial<AdvancedOptions>); // 高级配置，需要设置key和storage。该方式适用于 localStorage 或 sessionStorage 。
@@ -170,13 +169,14 @@ class Cache2<ValueType = any> {
 
   // 设置键值对。设置成功返回 true 。
   set(key: string, value: ValueType, ttl?: number) {
-    const newCacheValues = this._tempCacheValues || this.sortCacheValues;
+    // 该排序数据不能使用缓存，可能导致结果异常。如添加的数据中有过期时间更早的，需要被替换掉。
+    const newCacheValues = this.sortCacheValues;
     const currIndex = newCacheValues.findIndex((item) => item.k === key);
     const obj = { k: key, v: value, t: Date.now(), ttl };
 
-    // 数据已存在，更新数据
     if (currIndex !== -1) {
-      newCacheValues.splice(currIndex, 1, obj);
+      // 数据已存在，删除数据
+      newCacheValues.splice(currIndex, 1);
     } else {
       // 数据量限制
       const isLimited = this._max > -1 && newCacheValues.length > this._max;
@@ -189,19 +189,21 @@ class Cache2<ValueType = any> {
           newCacheValues.pop();
         }
       }
-      newCacheValues.push(obj);
     }
+    newCacheValues.push(obj);
     this.setCacheValues(newCacheValues);
     return true;
   }
 
   // 设置多个键值对。设置成功返回 true 。
   mset(values: { key: string; value: ValueType; ttl?: number }[]) {
-    this._tempCacheValues = this.sortCacheValues;
-    const result = values.some((item) => {
-      return !this.set(item.key, item.value, item.ttl);
+    let result = true;
+    values.forEach((item) => {
+      const itemSetResult = this.set(item.key, item.value, item.ttl);
+      if (result && !itemSetResult) {
+        result = false;
+      }
     });
-    this._tempCacheValues = undefined;
     return result;
   }
 
