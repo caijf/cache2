@@ -11,30 +11,30 @@ type CacheData<ValueType = any> = {
   ttl?: number;
 }
 
-type Options = {
-  max: number; // 最大存储数据量。-1表示无限制。
-  maxStrategy?: 'replaced' | 'limited'; // 当超过最大存储限制时的缓存策略，默认 limited 。 replaced 表示优先删除快过期的数据，如果过期时间相同，则按照先入先出删除缓存数据。 limited 表示不存入数据返回 false
-  stdTTL: number; // 数据存活时间，单位为毫秒。0表示无期限。
-  storage: TStorage; // 数据存储器，支持自定义。可设置为 localStorage/sessionStorage 。 。
+// 基础配置，不需要设置 key 和 storage
+type BaseOptions = {
+  max?: number; // 最大存储数据量，默认-1。-1表示无限制。
+  maxStrategy?: 'replaced' | 'limited'; // 当超过最大存储限制时的缓存策略，默认 'replaced' 。 replaced 表示优先删除快过期的数据，如果过期时间相同，则按照先入先出删除缓存数据。 limited 表示不存入数据返回 false
+  stdTTL?: number; // 数据存活时间，单位为毫秒，默认0。0表示无期限。
+}
 
+// 高级配置，支持自定义设置 key 和 storage
+// 直接使用内存缓存，不需要用到 replacer reviver
+type AdvancedOptions = {
+  storage: TStorage; // 数据存储器，支持自定义。可设置为 localStorage/sessionStorage 。 。
   replacer?: JSON_Stringify_replacer; // 同 JSON.stringify 的 replacer
   reviver?: JSON_Parse_reviver; // 同 JSON.parse 的 reviver
 }
 
-class CacheCalss<ValueType = any> {
-  private options!: Options;
+class Cache2<ValueType = any> {
+  private options!: Required<BaseOptions> & AdvancedOptions;
   private cacheKey!: string;
   private _tempCacheValues?: CacheData<ValueType>[]; // 临时存储缓存数据，提高遍历操作性能。
 
-  constructor(key?: string, options?: Partial<Options>); // 该方式适用于 localStorage 或 sessionStorage
-  constructor(options?: Partial<Options>); // 适用于内存缓存
-  constructor(key?: any, options?: Partial<Options>) {
-    // 没有使用 new 操作符
-    if (!(this instanceof CacheCalss)) {
-      return new CacheCalss(key, options);
-    }
-
-    let k: string = '', opts: Partial<Options> = {};
+  constructor(options?: BaseOptions); // 基础配置，默认使用内存缓存
+  constructor(key: string, options: BaseOptions & AdvancedOptions); // 高级配置，需要设置key和storage。该方式适用于 localStorage 或 sessionStorage 。
+  constructor(key?: any, options?: any) {
+    let k: string | undefined, opts: (BaseOptions & AdvancedOptions) | undefined;
     if (typeof key === 'string') {
       k = key;
     } else if (typeof key === 'object') {
@@ -48,7 +48,8 @@ class CacheCalss<ValueType = any> {
       max: -1,
       stdTTL: 0,
       storage: memoryStorage,
-      ...options
+      maxStrategy: 'replaced',
+      ...opts
     };
 
     // iOS Safari 开启隐身模式下使用 localStorage 可能报错
@@ -57,10 +58,16 @@ class CacheCalss<ValueType = any> {
     }
 
     this.cacheKey = k || uniqueId();
+
+    // 如果没有使用 new 操作符
+    // if (!(this instanceof Cache2)) {
+    //   return new Cache2(key, options);
+    // }
   }
 
   private get _storage() { return this.options.storage; }
   private get _max() { return this.options.max; }
+  private get _maxStrategy() { return this.options.maxStrategy; }
   private get _stdTTL() { return this.options.stdTTL; }
   private parse(value: any): CacheData<ValueType>[] {
     // 缓存在内存不需要转换
@@ -103,7 +110,7 @@ class CacheCalss<ValueType = any> {
     const cacheValues = this.cacheValues;
 
     // 根据过期时间排序，临近过期的排在前面，先添加的排在前面
-    if (this.options.maxStrategy === 'replaced') {
+    if (this._maxStrategy === 'replaced') {
       cacheValues.sort((a, b) => {
         const ttl_a = this._getTtl(a);
         const ttl_b = this._getTtl(b);
@@ -154,11 +161,11 @@ class CacheCalss<ValueType = any> {
     const newCacheValues = this._tempCacheValues || this.sortCacheValues;
     const isLimited = this._max > -1 && newCacheValues.length > this._max;
 
-    if (this.options.maxStrategy === 'limited') {
+    if (this._maxStrategy === 'limited') {
       if (isLimited) {
         return false;
       }
-    } else if (this.options.maxStrategy === 'replaced') {
+    } else if (this._maxStrategy === 'replaced') {
       // 过期优先，再则先进先出
       newCacheValues.shift();
     }
@@ -266,4 +273,4 @@ class CacheCalss<ValueType = any> {
   }
 }
 
-export default CacheCalss;
+export default Cache2;
