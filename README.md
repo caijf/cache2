@@ -56,7 +56,7 @@ myCache.get(key);
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | max | 最大缓存数据数量。`-1` 表示无限制。 | `number` | `-1` |
-| maxStrategy | 当超过最大存储限制时的缓存策略。<br/> `'replaced'` 表示优先删除快过期的数据，如果过期时间相同，则按照先入先出删除缓存数据。<br/>`'limited'` 表示达到限制数量时不再存入数据，返回 false 。 | `'replaced' \| 'limited'` | `'replaced'` |
+| maxStrategy | 当达到最大缓存数量限制时的缓存策略。<br/> `'replaced'` 表示按照先入先出规则，删除最早的有效缓存数据，然后添加新数据到最后面，始终返回 `true` 。<br/>`'limited'` 表示达到限制数量后不存入数据，返回 `false` 。 | `'replaced' \| 'limited'` | `'replaced'` |
 | stdTTL | 数据存活时间，应用于当前实例的所有缓存数据。单位为毫秒，`0` 表示无期限。 | `number` | `0` |
 | storage | 自定义数据存储器，支持 `localStorage` `sessionStorage` 。默认使用内存缓存。 | `TStorage` | - |
 | replacer | 仅在自定义数据存储器后生效。同 [JSON.stringify](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) 的 replacer。 | `(this: any, key: string, value: any) => any` | - |
@@ -72,7 +72,7 @@ const myCache = new Cache2();
 
 ### set(key: string, value: any, ttl?: number)
 
-设置键值对。设置成功返回 `true` 。如果是更新已存在的键值，数据有效期将重新计算。
+设置键值对。设置成功返回 `true` 。如果是更新已存在的键值，缓存时间点也将会更新，数据有效期将重新计算。
 
 ```typescript
 const obj = { foo: 'bar', baz: 42 };
@@ -83,7 +83,7 @@ myCache.set('myKey', obj, 5 * 60 * 1000);
 
 ### mset(values: {key: string, value: any, ttl?: number}[])
 
-设置多个键值对。设置成功返回 `true` 。如果是更新已存在的键值，数据有效期将重新计算。
+设置多个键值对。设置成功返回 `true` 。如果是更新已存在的键值，缓存时间点也将会更新，数据有效期将重新计算。
 
 ```typescript
 const obj = { foo: 'bar', baz: 42 };
@@ -174,7 +174,7 @@ myCache.clear();
 
 ### ttl(key: string, ttl: number)
 
-重新定义一个键的 `ttl` 。如果找到并更新成功，则返回 `true` ，数据有效期将重新计算。
+重新定义一个键的 `ttl` 。如果找到并更新成功，则返回 `true` 。缓存时间点不变，数据有效期将重新计算。
 
 ```typescript
 const obj = { foo: 'bar', baz: 42 };
@@ -210,6 +210,8 @@ myCache.getTtl('unknownKey'); // undefined
 ## 应用场景
 
 TODO 缓存固定返回值的接口数据、图片等。
+
+TODO 如何自定义一个 storage 。
 
 [npm]: https://img.shields.io/npm/v/cache2.svg
 [npm-url]: https://npmjs.com/package/cache2
