@@ -32,7 +32,7 @@ const config: RollupOptions = {
       exports: 'named'
     }
   ],
-  external: ['tslib']
+  external: ['tslib', 'emitter-pro']
 };
 
 export default config;

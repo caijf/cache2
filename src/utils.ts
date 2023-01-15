@@ -9,8 +9,9 @@ function randomString() {
 let uid = 1;
 
 // 返回唯一标识
-export function uniqueId(prefix = 'cache2') {
-  return `${prefix}_${randomString()}_${uid++}`;
+export function uniqueId(id = '', prefix = 'cache2') {
+  const str = typeof id === 'string' && id ? id : `${randomString()}_${uid++}`;
+  return `${prefix}_${str}`;
 }
 
 // 是否支持 storage

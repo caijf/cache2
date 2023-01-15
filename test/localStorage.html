@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>test localStorage</title>
+  <script src="../dist/cache2.js"></script>
+</head>
+
+<body>
+  <script>
+    const myCache = new Cache2('testkey', {
+      storage: localStorage
+    });
+
+    myCache.set('num', 1);
+    myCache.set('str', 'foo');
+    myCache.set('undef', undefined);
+    myCache.set('obj', { foo: 'bar', baz: { x: 42 } });
+
+    console.log(myCache.get('num') === 1);
+    console.log(myCache.get('str') === 'foo');
+    console.log(myCache.get('undef') === undefined);
+    console.log(typeof myCache.get('obj') === 'object');
+  </script>
+</body>
+
+</html>
