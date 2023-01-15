@@ -278,10 +278,10 @@ fileCache.set(fssid, URL.createObjectURL(file));
 ```typescript
 const localCache = new Cache2('storageKey', {
   storage: localStorage,
-  stdTTL: 5 * 60 * 1000 // 默认数据留存时间为 5 分钟
+  stdTTL: 5 * 60 * 1000 // 默认数据留存时间为5分钟
 });
 
-localCache.set('num', 1); // 该数据默认留存10分钟
+localCache.set('num', 1); // 该数据默认留存5分钟
 localCache.set('str', 'foo', 10 * 60 * 1000); // 该数据留存10分钟
 ```
 
@@ -305,10 +305,10 @@ const wxStorage = {
 };
 const wxCache = new Cache2('storageKey', {
   storage: wxStorage,
-  stdTTL: 5 * 60 * 1000 // 默认数据留存时间为 5 分钟
+  stdTTL: 5 * 60 * 1000 // 默认数据留存时间为5分钟
 });
 
-wxCache.set('num', 1); // 该数据默认留存10分钟
+wxCache.set('num', 1); // 该数据默认留存5分钟
 wxCache.set('str', 'foo', 10 * 60 * 1000); // 该数据留存10分钟
 ```
 
