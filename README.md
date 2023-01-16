@@ -217,7 +217,7 @@ myCache.startCheckperiod();
 
 ### stopCheckperiod()
 
-停止定时校验过期数据。参数 `startCheckperiod` 示例。
+停止定时校验过期数据。参考 `startCheckperiod` 示例。
 
 ## 自定义事件
 
