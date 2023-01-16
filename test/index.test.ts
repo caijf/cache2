@@ -413,6 +413,8 @@ describe('use cache key & storage', () => {
   });
 
   it('storage setItem throw  error', () => {
+    const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(jest.fn);
+
     const myCache = new Cache2('test', {
       storage: {
         setItem() {
@@ -428,9 +430,13 @@ describe('use cache key & storage', () => {
     });
     expect(myCache.set('num', o.num)).toEqual(true);
     expect(myCache.get('num')).toEqual(o.num);
+
+    mockConsoleError.mockRestore();
   });
 
   it('storage removeItem throw  error', () => {
+    const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(jest.fn);
+
     const myCache = new Cache2('test', {
       storage: {
         setItem() {
@@ -446,5 +452,7 @@ describe('use cache key & storage', () => {
     });
     expect(myCache.set('num', o.num)).toEqual(true);
     expect(myCache.get('num')).toEqual(o.num);
+
+    mockConsoleError.mockRestore();
   });
 });

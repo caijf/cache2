@@ -30,6 +30,9 @@ export function isStorageSupport(storage: TStorage) {
     }
     return isSupport;
   } catch (e) {
+    console.error(
+      '[cache2] The current custom storage is not supported. The default memory cache will be used.'
+    );
     return false;
   }
 }
