@@ -1,11 +1,9 @@
 {
-  "include": ["src/**/*", "rollup.config.ts", "rollup.umd.config.ts"],
   "compilerOptions": {
     "target": "ES5",
     "lib": ["DOM", "ESNext"],
     "module": "ESNext",
     "moduleResolution": "node",
-    "types": [],
     "importHelpers": true,
     "downlevelIteration": true,
     "esModuleInterop": true,

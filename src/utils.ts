@@ -1,4 +1,9 @@
-export type TStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> & Record<string, any>;
+export type TStorage<T = any> = {
+  getItem(key: string): T | null;
+  removeItem(key: string): void;
+  setItem(key: string, value: T): void;
+  [x: string]: any;
+};
 
 // 随机字符串
 function randomString() {

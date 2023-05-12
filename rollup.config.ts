@@ -12,8 +12,7 @@ export const commonConfig = {
     resolve(),
     commonjs(),
     typescript({
-      include: ['src/**/*'],
-      tsconfig: './tsconfig.json'
+      tsconfig: './tsconfig.build.json'
     })
   ]
 };

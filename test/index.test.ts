@@ -356,7 +356,7 @@ describe('use cache key & storage', () => {
   });
 
   it('mock localStorage or sessionStorage', () => {
-    const cache = {};
+    const cache: Record<string, any> = {};
     const myCache = new Cache2('test', {
       storage: {
         setItem(key, value) {
@@ -385,7 +385,7 @@ describe('use cache key & storage', () => {
   });
 
   it('mock wx snycStorage needParsed=false', () => {
-    const cache = {};
+    const cache: Record<string, any> = {};
     const myCache = new Cache2('test', {
       storage: {
         setItem(key, value) {
