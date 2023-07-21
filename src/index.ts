@@ -1,6 +1,53 @@
 import Emitter from 'emitter-pro';
 import memoryStorage from './memoryStorage';
-import { isStorageSupport, uniqueId, TStorage } from './utils';
+
+// 随机字符串
+function randomString() {
+  return Math.random().toString(16).substring(2, 8);
+}
+
+// 内部自增id
+let uid = 1;
+
+// 返回唯一标识
+function uniqueId(id = '') {
+  const str = typeof id === 'string' && id ? id : `${randomString()}_${uid++}`;
+  return 'cache2_' + str;
+}
+
+// 是否支持 storage
+function isStorageSupported(storage: TStorage) {
+  try {
+    const isSupport =
+      typeof storage === 'object' &&
+      storage !== null &&
+      !!storage.setItem &&
+      !!storage.getItem &&
+      !!storage.removeItem;
+    if (isSupport) {
+      const key = uniqueId();
+      const value = '1';
+      storage.setItem(key, value);
+      if (storage.getItem(key) !== value) {
+        return false;
+      }
+      storage.removeItem(key);
+    }
+    return isSupport;
+  } catch (e) {
+    console.error(
+      '[cache2] The current custom storage is not supported. The default memory cache will be used.'
+    );
+    return false;
+  }
+}
+
+type TStorage<T = any> = {
+  getItem(key: string): T | null;
+  removeItem(key: string): void;
+  setItem(key: string, value: T): void;
+  [x: string]: any;
+};
 
 type JSON_Parse_reviver = (this: any, key: string, value: any) => any;
 type JSON_Stringify_replacer = JSON_Parse_reviver;
@@ -60,7 +107,7 @@ class Cache2<ValueType = any> extends Emitter<(key: string, value: ValueType) =>
     };
 
     // iOS Safari 开启隐身模式下使用 localStorage 可能报错
-    if (this.options.storage !== memoryStorage && !isStorageSupport(this.options.storage)) {
+    if (this.options.storage !== memoryStorage && !isStorageSupported(this.options.storage)) {
       this.options.storage = memoryStorage;
       this.options.needParsed = false;
     }
