@@ -305,7 +305,8 @@ const wxStorage = {
 };
 const wxCache = new Cache2('storageKey', {
   storage: wxStorage,
-  stdTTL: 5 * 60 * 1000 // 默认数据留存时间为5分钟
+  needParsed: false,
+  stdTTL: 5 * 60 * 1000 // 设置默认数据留存时间为5分钟
 });
 
 wxCache.set('num', 1); // 该数据默认留存5分钟
