@@ -15,13 +15,15 @@
 ### 安装
 
 ```shell
+npm install cache2
+```
+
+```shell
 yarn add cache2
 ```
 
-或
-
 ```shell
-npm install cache2
+pnpm add cache2
 ```
 
 ### 基础用法
