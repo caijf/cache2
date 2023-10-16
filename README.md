@@ -160,7 +160,7 @@ myCache.del('myKey'); // 1
 myCache.del('not found'); // 0
 
 myCache.set('myKey', { foo: 'bar', baz: 42 });
-myCache.mdel(['myKey', 'myKey2']); // 2
+myCache.del(['myKey', 'myKey2']); // 2
 ```
 
 ### ttl(key: string, ttl: number)
