@@ -176,6 +176,17 @@ describe('expired & checkperiod', () => {
     jest.advanceTimersByTime(1);
     expect(myCache.del('str')).toEqual(1);
   });
+
+  it('getLastModified', () => {
+    const now = Date.now();
+    const myCache = new Cache2();
+    myCache.set('num', o.num);
+    expect(myCache.getLastModified('num')).toEqual(now);
+
+    jest.advanceTimersByTime(1000);
+    myCache.set('num', o.num);
+    expect(myCache.getLastModified('num')).toEqual(now + 1000);
+  });
 });
 
 describe('max & maxStrategy', () => {

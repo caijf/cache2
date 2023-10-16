@@ -55,7 +55,7 @@ type JSON_Stringify_replacer = JSON_Parse_reviver;
 type CacheData<ValueType = any> = {
   v: ValueType; // value
   t: number; // time to live
-  n: number; // create time
+  n: number; // last modified time
 };
 type CacheRecord<ValueType = any> = Record<string, CacheData<ValueType>>;
 
@@ -191,7 +191,7 @@ class Cache2<ValueType = any> extends Emitter<(key: string, value: ValueType) =>
     if (data && this._check(key, data)) {
       return data.v;
     }
-    return undefined;
+    return;
   }
 
   // 从缓存中获取多个保存的值。如果未找到或已过期，则返回一个空对象。如果找到该值，它会返回一个具有键值对的对象。
@@ -330,7 +330,20 @@ class Cache2<ValueType = any> extends Emitter<(key: string, value: ValueType) =>
     if (data && this._check(key, data)) {
       return cacheValues[key].t;
     }
-    return undefined;
+    return;
+  }
+
+  // 获取某个键值的最后修改时间
+  // 如果未找到键或已过期，返回 undefined 。
+  // 否则返回一个以毫秒为单位的时间戳，表示键值将过期的时间。
+  getLastModified(key: string) {
+    const cacheValues = this.cacheValues;
+    const data = cacheValues[key];
+
+    if (data && this._check(key, data)) {
+      return cacheValues[key].n;
+    }
+    return;
   }
 
   // 启动定时校验过期数据

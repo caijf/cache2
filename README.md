@@ -198,6 +198,25 @@ myCache.getTtl('noTtlKey'); // 0
 myCache.getTtl('unknownKey'); // undefined
 ```
 
+### getLastModified(key: string)
+
+获取某个键值的最后修改时间。它有以下返回值：
+
+- 如果未找到键或已过期，返回 `undefined` 。
+- 否则返回一个以毫秒为单位的时间戳，表示键值将过期的时间。
+
+```typescript
+const myCache = new Cache2();
+
+// Date.now() = 1673330000000
+myCache.set('myKey', 'foo');
+myCache.getLastModified('myKey'); // 1673330000000
+
+// Date.now() = 1673330005000
+myCache.set('myKey', 'bar');
+myCache.getLastModified('myKey'); // 1673330005000
+```
+
 ### startCheckperiod()
 
 启动定时校验过期数据。
