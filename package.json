@@ -1,6 +1,6 @@
 {
   "name": "cache2",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "一个简单的 Javascript 缓存管理，支持浏览器端和 node 端。",
   "scripts": {
     "test": "jest --verbose",
