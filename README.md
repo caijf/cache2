@@ -203,7 +203,7 @@ myCache.getTtl('unknownKey'); // undefined
 获取某个键值的最后修改时间。它有以下返回值：
 
 - 如果未找到键或已过期，返回 `undefined` 。
-- 否则返回一个以毫秒为单位的时间戳，表示键值将过期的时间。
+- 否则返回一个以毫秒时间戳，表示键值最后修改时间。
 
 ```typescript
 const myCache = new Cache2();
