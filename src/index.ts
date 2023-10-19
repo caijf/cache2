@@ -8,11 +8,15 @@ function randomString() {
 
 // 内部自增id
 let uid = 1;
+const pkgName = 'cache2';
+const defaultPrefix = pkgName + '_';
+const defaultNs = 'default';
 
 // 返回唯一标识
-function uniqueId(id = '') {
+function uniqueId(id?: string, prefix?: string) {
   const str = typeof id === 'string' && id ? id : `${randomString()}_${uid++}`;
-  return 'cache2_' + str;
+  const pre = typeof prefix === 'string' ? prefix : defaultPrefix;
+  return pre + str;
 }
 
 // 是否支持 storage
@@ -65,6 +69,7 @@ type BaseOptions = {
   maxStrategy?: 'limited' | 'replaced'; // 当达到最大缓存数量限制时的缓存策略，默认 'limited' 。limited 表示达到限制数量后不存入数据，返回 false 。replaced 表示优先替换快过期的数据，如果都是一样的过期时间(0)，按照先入先出规则处理，始终返回 true。
   stdTTL?: number; // 数据存活时间，单位为毫秒，默认0。0表示无期限。
   checkperiod?: number; // 定时检查过期数据，单位毫秒。默认 0 。
+  prefix?: string; // 命名空间缓存键前缀，默认 cache2_ 。
 };
 
 // 高级配置，支持自定义设置 key 和 storage
@@ -81,17 +86,18 @@ class Cache2<ValueType = any> extends Emitter<(key: string, value: ValueType) =>
   private cacheKey: string;
   private _checkTimeout: any;
 
-  constructor(options?: BaseOptions); // 基础配置，默认使用内存缓存
-  constructor(key: string, options?: Partial<BaseOptions & AdvancedOptions>); // 高级配置，需要设置key和storage。该方式适用于 localStorage 或 sessionStorage 。
-  constructor(key?: any, options?: any) {
+  constructor(options?: Partial<BaseOptions & AdvancedOptions>); // 基础配置
+  constructor(namespace: string, options?: Partial<BaseOptions & AdvancedOptions>); // 自定义命名空间
+  constructor(namespace?: any, options?: any) {
     super();
 
     let k: string | undefined, opts: (BaseOptions & AdvancedOptions) | undefined;
-    if (typeof key === 'string') {
-      k = key;
-    } else if (typeof key === 'object') {
-      opts = key;
+    if (typeof namespace === 'string') {
+      k = namespace;
+    } else if (typeof namespace === 'object') {
+      opts = namespace;
     }
+
     if (!opts && typeof options === 'object') {
       opts = options;
     }
@@ -103,16 +109,21 @@ class Cache2<ValueType = any> extends Emitter<(key: string, value: ValueType) =>
       maxStrategy: 'limited',
       checkperiod: 0,
       needParsed: typeof opts?.needParsed === 'boolean' ? opts.needParsed : !!opts?.storage,
+      prefix: defaultPrefix,
       ...opts
     };
 
     // iOS Safari 开启隐身模式下使用 localStorage 可能报错
-    if (this.options.storage !== memoryStorage && !isStorageSupported(this.options.storage)) {
-      this.options.storage = memoryStorage;
-      this.options.needParsed = false;
+    if (this.options.storage !== memoryStorage) {
+      if (!isStorageSupported(this.options.storage)) {
+        this.options.storage = memoryStorage;
+        this.options.needParsed = false;
+      } else if (!k) {
+        k = defaultNs;
+      }
     }
 
-    this.cacheKey = uniqueId(k);
+    this.cacheKey = uniqueId(k, this.options.prefix);
     this.startCheckperiod();
   }
 
