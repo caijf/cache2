@@ -1,6 +1,6 @@
 # Cache2
 
-[![npm][npm]][npm-url] ![npm](https://img.shields.io/npm/dt/cache2) ![GitHub](https://img.shields.io/github/license/caijf/cache2.svg)
+[![npm][npm]][npm-url] [![codecov](https://codecov.io/gh/caijf/cache2/graph/badge.svg?token=00EFPCEHYH)](https://codecov.io/gh/caijf/cache2) ![npm](https://img.shields.io/npm/dt/cache2) ![GitHub](https://img.shields.io/github/license/caijf/cache2.svg)
 
 一个简单的 Javascript 缓存管理，支持浏览器端和 node 端。
 
