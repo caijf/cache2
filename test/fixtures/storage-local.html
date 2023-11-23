@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>storage local</title>
+    <script src="../../dist/cache2.js"></script>
+  </head>
+  <body>
+    <script>
+      const { local } = cache2;
+      local.set('a', 1);
+      local.set('b', { foo: 'bar', baz: [] });
+      console.log(local.get('a')); // 1
+      console.log(local.get('b')); // {foo: 'bar', baz: Array(0)}
+
+      local.clear();
+      console.log(local.get('a')); // null
+    </script>
+  </body>
+</html>

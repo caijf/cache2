@@ -1,0 +1,30 @@
+name: Test
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - v*
+  pull_request:
+    branches:
+      - main
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install
+        run: pnpm install
+      - name: Test
+        run: pnpm test:coverage && ls ./coverage/
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

@@ -8,7 +8,8 @@
 
 - 支持最大缓存数量，及限制数量后再添加缓存数据的不同策略
 - 支持过期时间，当前实例或单个数据的过期时间
-- 支持自定义缓存，也可以使用 `localStorage` `sessionStorage`
+- 支持自定义缓存，比如 `localStorage` `sessionStorage`
+- 提供简单的浏览器存储 `local` `session`
 
 ## 使用
 
@@ -31,9 +32,9 @@ pnpm add cache2
 默认使用内存缓存数据。
 
 ```typescript
-import Cache2 from 'cache2';
+import { Cache } from 'cache2';
 
-const myCache = new Cache2(options);
+const myCache = new Cache(options);
 
 myCache.set(key, value, ttl?);
 myCache.get(key);
@@ -44,9 +45,9 @@ myCache.get(key);
 自定义命名空间和缓存。
 
 ```typescript
-import Cache2 from 'cache2';
+import { Cache } from 'cache2';
 
-const myCache = new Cache2('namespace', {
+const myCache = new Cache('namespace', {
   storage: localStorage
 });
 
@@ -54,7 +55,27 @@ myCache.set(key, value, ttl?);
 myCache.get(key);
 ```
 
-## 配置项
+### 浏览器存储
+
+如果你不需要命名空间、控制数据存活时间和最大数量，可以使用下列几个 API ：
+
+```typescript
+import { local, session } from 'cache2';
+
+// local 使用浏览器的 window.localStorage
+// session 使用浏览器的 window.sessionStorage
+// 内部做了一些处理，比如存储数据自动序列化，读取数据自动解析
+// local session 不具备 Cache 的数据存活时间控制
+local.set('foo', { a: 1, b: ['bar'], c: ['x', 2, 3] });
+local.get('foo');
+// { a: 1, b: ['bar'], c: ['x', 2, 3] }
+
+local.del('foo');
+local.get('foo');
+// undefined
+```
+
+## Cache 配置项
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -71,8 +92,8 @@ myCache.get(key);
 ## 实例方法
 
 ```typescript
-import Cache2 from 'cache2';
-const myCache = new Cache2();
+import { Cache } from 'cache2';
+const myCache = new Cache();
 ```
 
 ### set(key: string, value: any, ttl?: number)
@@ -223,7 +244,7 @@ myCache.ttl('not found', 1000);
 - 否则返回一个以毫秒为单位的时间戳，表示键值将过期的时间。
 
 ```typescript
-const myCache = new Cache2({ stdTTL: 5 * 1000 });
+const myCache = new Cache({ stdTTL: 5 * 1000 });
 
 // Date.now() = 1673330000000
 myCache.set('ttlKey', 'expireData');
@@ -242,7 +263,7 @@ myCache.getTtl('unknownKey'); // undefined
 - 否则返回一个以毫秒时间戳，表示键值最后修改时间。
 
 ```typescript
-const myCache = new Cache2();
+const myCache = new Cache();
 
 // Date.now() = 1673330000000
 myCache.set('myKey', 'foo');
@@ -261,7 +282,7 @@ myCache.getLastModified('myKey'); // 1673330005000
 
 ```typescript
 // 设置 checkperiod 之后自动生效
-const myCache = new Cache2({
+const myCache = new Cache({
   checkperiod: 10 * 60 * 1000 // 10分钟检查一次数据是否过期
 });
 
@@ -315,14 +336,18 @@ myCache.on('expired', (key, value) => {
 ### 缓存接口数据
 
 ```typescript
-const responseCache = new Cache2({ max: 10, maxStrategy: 'replaced' });
+import { Cache } from 'cache2';
+
+const responseCache = new Cache({ max: 10, maxStrategy: 'replaced' });
 // ...
 ```
 
 ### 缓存 URL.createObjectURL 预览文件，删除时 URL.revokeObjectURL 释放缓存
 
 ```typescript
-const fileCache = new Cache2({ max: 20, maxStrategy: 'replaced' });
+import { Cache } from 'cache2';
+
+const fileCache = new Cache({ max: 20, maxStrategy: 'replaced' });
 fileCache.on('del', (key, value) => {
   URL.revokeObjectURL(value);
 });
@@ -333,7 +358,9 @@ fileCache.set(fssid, URL.createObjectURL(file));
 ### `sessionStorage`、`localStorage` 支持过期时间
 
 ```typescript
-const localCache = new Cache2('storageKey', {
+import { Cache } from 'cache2';
+
+const localCache = new Cache('storageKey', {
   storage: localStorage,
   stdTTL: 5 * 60 * 1000 // 默认数据留存时间为5分钟
 });
@@ -349,6 +376,8 @@ localCache.set('str', 'foo', 10 * 60 * 1000); // 该数据留存10分钟
 例如，微信端的同步缓存等。
 
 ```typescript
+import { Cache } from 'cache2';
+
 const wxStorage = {
   getItem(key: string) {
     return wx.getStorageSync(key);
@@ -360,7 +389,7 @@ const wxStorage = {
     wx.removeStorageSync(key);
   }
 };
-const wxCache = new Cache2('storageKey', {
+const wxCache = new Cache('storageKey', {
   storage: wxStorage,
   needParsed: false,
   stdTTL: 5 * 60 * 1000 // 设置默认数据留存时间为5分钟

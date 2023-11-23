@@ -22,13 +22,11 @@ const config: RollupOptions = {
   output: [
     {
       format: 'cjs',
-      file: `${outputFilePrefix}.cjs.js`,
-      exports: 'default'
+      file: `${outputFilePrefix}.cjs.js`
     },
     {
       format: 'es',
-      file: `${outputFilePrefix}.esm.js`,
-      exports: 'default'
+      file: `${outputFilePrefix}.esm.js`
     }
   ],
   external: ['tslib', 'emitter-pro']
