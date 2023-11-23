@@ -10,7 +10,8 @@
 
   <body>
     <script>
-      const myCache = new cache2.Cache('testkey', {
+      const { Cache } = cache2;
+      const myCache = new Cache('testkey', {
         storage: localStorage
       });
 

@@ -4,3 +4,4 @@ import local from './local';
 import session from './session';
 
 export { Cache, Storage, local, session };
+export default Cache;

@@ -10,7 +10,8 @@
 
   <body>
     <script>
-      const myCache1 = new cache2.Cache({
+      const { Cache } = cache2;
+      const myCache1 = new Cache({
         storage: localStorage
       });
 
@@ -24,7 +25,7 @@
       console.log(myCache1.get('undef') === undefined);
       console.log(typeof myCache1.get('obj') === 'object');
 
-      const myCache2 = new Cache2('testkey', {
+      const myCache2 = new Cache('testkey', {
         storage: localStorage,
         prefix: ''
       });
