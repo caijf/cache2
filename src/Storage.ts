@@ -11,18 +11,17 @@ type Options = {
 
 export class Storage {
   private storage: TStorage;
-  private isSupported: boolean;
   private keyPrefix: string;
   private options: Options;
   private _keys: Record<string, any>;
   isMemoryStorage: boolean;
 
   constructor(storage?: TStorage, options?: Options) {
-    this.isSupported = storage ? isStorageSupported(storage) : false;
-    this.keyPrefix = options?.prefix || (this.isSupported ? '' : getUniqueId());
+    const isSupported = storage ? isStorageSupported(storage) : false;
+    this.keyPrefix = options?.prefix || (isSupported ? '' : getUniqueId());
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    this.storage = this.isSupported ? storage! : memoryStorage;
-    this.isMemoryStorage = !this.isSupported || storage === memoryStorage;
+    this.storage = isSupported ? storage! : memoryStorage;
+    this.isMemoryStorage = !isSupported || storage === memoryStorage;
     this.options = {
       needParsed: !this.isMemoryStorage,
       ...options

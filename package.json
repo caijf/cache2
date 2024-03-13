@@ -82,5 +82,8 @@
   "dependencies": {
     "emitter-pro": "^1.0.3",
     "tslib": "^2.6.2"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }
