@@ -8,7 +8,7 @@
   </head>
   <body>
     <script>
-      const { local } = cache2;
+      const { local, Storage } = cache2;
       local.set('a', 1);
       local.set('b', { foo: 'bar', baz: [] });
       console.log(local.get('a')); // 1
@@ -16,6 +16,15 @@
 
       local.clear();
       console.log(local.get('a')); // null
+
+      const memoryStorage = new Storage(undefined, {
+        prefix: ''
+      });
+      memoryStorage.set('a', 1);
+      memoryStorage.set('b', { foo: 'bar', baz: [] });
+      memoryStorage.del('a');
+      console.log(memoryStorage.get('a'));
+      console.log(memoryStorage.get('b'));
     </script>
   </body>
 </html>

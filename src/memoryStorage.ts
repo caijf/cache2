@@ -2,7 +2,7 @@ const cache: Record<string, any> = {};
 
 const memoryStorage = {
   getItem(key: string) {
-    return cache[key] || null;
+    return key in cache ? cache[key] : null;
   },
   setItem(key: string, value: any) {
     cache[key] = value;

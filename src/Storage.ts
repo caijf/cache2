@@ -13,12 +13,11 @@ export class Storage {
   private storage: TStorage;
   private keyPrefix: string;
   private options: Options;
-  private _keys: Record<string, any>;
+  private _keys: string[];
   isMemoryStorage: boolean;
 
-  constructor(storage?: TStorage, options?: Options) {
+  constructor(storage?: TStorage, options: Options = {}) {
     const isSupported = storage ? isStorageSupported(storage) : false;
-    this.keyPrefix = options?.prefix || (isSupported ? '' : getUniqueId());
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.storage = isSupported ? storage! : memoryStorage;
     this.isMemoryStorage = !isSupported || storage === memoryStorage;
@@ -26,7 +25,10 @@ export class Storage {
       needParsed: !this.isMemoryStorage,
       ...options
     };
-    this._keys = {};
+
+    this.keyPrefix =
+      'prefix' in options ? String(options.prefix) : isSupported ? '' : getUniqueId();
+    this._keys = [];
   }
   private getKey(key: string) {
     return this.keyPrefix + key;
@@ -44,22 +46,21 @@ export class Storage {
     );
     if (this.isMemoryStorage) {
       // 内部标记
-      this._keys[key] = 1;
+      this._keys.push(key);
     }
   }
   del(key: string) {
     const k = this.getKey(key);
     this.storage.removeItem(k);
     if (this.isMemoryStorage) {
-      delete this._keys[key];
+      this._keys = this._keys.filter((item) => item !== key);
     }
   }
   clear() {
     if (typeof this.storage.clear === 'function') {
       this.storage.clear();
     } else if (this.isMemoryStorage) {
-      const keys = Object.keys(this._keys);
-      keys.forEach((key) => {
+      this._keys.forEach((key) => {
         this.del(key);
       });
     }
