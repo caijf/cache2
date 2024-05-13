@@ -2,21 +2,21 @@ import { JSON_Parse_reviver, JSON_Stringify_replacer, TStorage } from './interfa
 import memoryStorage from './memoryStorage';
 import { getUniqueId, isStorageSupported, parse, stringify } from './utils';
 
-type Options = {
-  prefix?: string;
-  needParsed?: boolean;
-  replacer?: JSON_Stringify_replacer;
-  reviver?: JSON_Parse_reviver;
+export type StorageOptions = {
+  prefix: string;
+  needParsed: boolean; // 存取数据时是否需要解析和序列化数据。如果使用内存缓存，默认为 false ，如果自定义 storage 默认为 true。
+  replacer: JSON_Stringify_replacer; // 仅在自定义数据存储器后生效。同 JSON.stringify 的 replacer
+  reviver: JSON_Parse_reviver; // 仅在自定义数据存储器后生效。同 JSON.parse 的 reviver
 };
 
 export class Storage {
   private storage: TStorage;
   private keyPrefix: string;
-  private options: Options;
+  private options: Partial<StorageOptions>;
   private _keys: string[];
   isMemoryStorage: boolean;
 
-  constructor(storage?: TStorage, options: Options = {}) {
+  constructor(storage?: TStorage, options: Partial<StorageOptions> = {}) {
     const isSupported = storage ? isStorageSupported(storage) : false;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.storage = isSupported ? storage! : memoryStorage;
