@@ -9,8 +9,8 @@ function randomString() {
 let uid = 1;
 
 // 返回唯一标识
-export function getUniqueId(id?: string) {
-  return typeof id === 'string' && id ? id : `${randomString()}_${uid++}`;
+export function getUniqueId() {
+  return `${randomString()}_${uid++}`;
 }
 
 // 是否支持 storage

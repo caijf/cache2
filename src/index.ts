@@ -1,5 +1,5 @@
 import Cache, { CacheOptions } from './Cache';
-import Storage, { StorageOptions } from './Storage';
+import { Storage, StorageOptions } from './Storage';
 import local from './local';
 import session from './session';
 

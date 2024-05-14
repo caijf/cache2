@@ -13,12 +13,13 @@ type CacheData<ValueType = any> = {
 };
 type CacheRecord<ValueType = any> = Record<string, CacheData<ValueType>>;
 
-export type CacheOptions = StorageOptions & {
+export type CacheOptions = Omit<StorageOptions, 'memoryScope'> & {
   max: number; // 最大存储数据量，默认-1。-1表示无限制。
   maxStrategy: 'limited' | 'replaced'; // 当达到最大缓存数量限制时的缓存策略，默认 'limited' 。limited 表示达到限制数量后不存入数据，返回 false 。replaced 表示优先替换快过期的数据，如果都是一样的过期时间(0)，按照先入先出规则处理，始终返回 true。
   stdTTL: number; // 数据存活时间，单位为毫秒，默认0。0表示无期限。
   checkperiod: number; // 定时检查过期数据，单位毫秒。默认 0 。
   storage: TStorage; // 自定义数据存储器。支持 localStorage/sessionStorage 。
+  prefix: string; // 缓存键前缀。
 };
 
 class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => void> {
@@ -33,9 +34,10 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
   constructor(namespace?: any, options?: any) {
     super();
 
-    let k: string | undefined, opts: CacheOptions | undefined;
+    let ns = defaultNamespace,
+      opts: CacheOptions | undefined;
     if (typeof namespace === 'string') {
-      k = namespace;
+      ns = namespace;
     } else if (typeof namespace === 'object') {
       opts = namespace;
     }
@@ -52,13 +54,12 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
       prefix: defaultPrefix,
       ...opts
     };
-    this.storage = new Storage(this.options.storage, this.options);
+    this.storage = new Storage(this.options.storage, {
+      memoryScope: ns,
+      ...opts
+    });
 
-    if (!this.storage.isMemoryStorage && !k) {
-      k = defaultNamespace;
-    }
-
-    this.cacheKey = getUniqueId(k);
+    this.cacheKey = (this.options.prefix || '') + (ns || '') || getUniqueId();
     this.startCheckperiod();
   }
 

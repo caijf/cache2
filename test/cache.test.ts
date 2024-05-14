@@ -1,5 +1,5 @@
 import { Cache } from '../src';
-import memoryStorage from '../src/memoryStorage';
+import MemoryStorage from '../src/MemoryStorage';
 
 beforeEach(() => {
   jest.useFakeTimers();
@@ -21,10 +21,14 @@ const o = {
   }
 };
 
-const customStorage = Object.assign({}, memoryStorage);
+const customStorage = Object.assign({}, new MemoryStorage('unique id 1234'));
 
 describe('basic', () => {
   const myCache = new Cache();
+
+  afterAll(() => {
+    myCache.clear();
+  });
 
   it('should be defined', () => {
     expect(Cache).toBeDefined();
@@ -133,7 +137,19 @@ describe('namespace', () => {
       storage: customStorage
     });
     // @ts-ignore
-    expect(myCache.cacheKey).toBe('default');
+    expect(myCache.cacheKey).toBe('cache2_default');
+
+    const myCache2 = new Cache({
+      prefix: ''
+    });
+    // @ts-expect-error
+    expect(myCache2.cacheKey).toBe('default');
+
+    const myCache3 = new Cache('', {
+      prefix: ''
+    });
+    // @ts-expect-error
+    expect(myCache3.cacheKey.length).toBe(8);
   });
 
   it('same namespace', () => {
@@ -181,7 +197,7 @@ describe('namespace', () => {
 
 describe('expired & checkperiod', () => {
   it('stdTTL', () => {
-    const myCache = new Cache({ stdTTL: 5000 });
+    const myCache = new Cache('expired & checkperiod', { stdTTL: 5000 });
     myCache.set('num', o.num);
     myCache.set('str', o.str, 1000);
 
@@ -218,7 +234,7 @@ describe('expired & checkperiod', () => {
   });
 
   it('checkperiod', () => {
-    const myCache = new Cache({ stdTTL: 5000, checkperiod: 10 * 60 * 1000 });
+    const myCache = new Cache('checkperiod', { stdTTL: 5000, checkperiod: 10 * 60 * 1000 });
     myCache.set('num', o.num);
     myCache.set('str', o.str, 10 * 60 * 1000);
 
@@ -249,7 +265,7 @@ describe('expired & checkperiod', () => {
 
 describe('max & maxStrategy', () => {
   it('max = 0', () => {
-    const myCache = new Cache({ max: 0 });
+    const myCache = new Cache('max', { max: 0 });
     expect(myCache.set('num', o.num)).toEqual(false);
     expect(
       myCache.mset([
@@ -261,7 +277,7 @@ describe('max & maxStrategy', () => {
   });
 
   it('limited', () => {
-    const myCache = new Cache({ max: 1, stdTTL: 1000 });
+    const myCache = new Cache('limited', { max: 1, stdTTL: 1000 });
     expect(myCache.set('num', o.num)).toEqual(true);
     expect(myCache.keys()).toEqual(['num']);
 
@@ -274,7 +290,7 @@ describe('max & maxStrategy', () => {
   });
 
   it('replaced', () => {
-    const myCache = new Cache({ max: 2, stdTTL: 1000, maxStrategy: 'replaced' });
+    const myCache = new Cache('replaced', { max: 2, stdTTL: 1000, maxStrategy: 'replaced' });
     expect(myCache.set('num', o.num)).toEqual(true);
     expect(myCache.set('str', o.str, 500)).toEqual(true);
 
@@ -286,7 +302,7 @@ describe('max & maxStrategy', () => {
   });
 
   it('expired', () => {
-    const myCache = new Cache({ max: 2, stdTTL: 5000 });
+    const myCache = new Cache('expired', { max: 2, stdTTL: 5000 });
     expect(myCache.set('num', o.num)).toEqual(true);
     expect(myCache.set('str', o.str, 1000)).toEqual(true);
     expect(myCache.set('obj', o.obj)).toEqual(false);
@@ -312,7 +328,7 @@ describe('events', () => {
     // });
     const fn1 = jest.fn();
     const fn2 = jest.fn();
-    const myCache = new Cache();
+    const myCache = new Cache('set');
 
     myCache.on('set', fn1);
     myCache.once('set', fn2);
@@ -338,7 +354,7 @@ describe('events', () => {
 
   it('set & limited', () => {
     const fn = jest.fn();
-    const myCache = new Cache({ max: 1 });
+    const myCache = new Cache('event set & limited', { max: 1 });
     myCache.on('set', fn);
     expect(fn).toHaveBeenCalledTimes(0);
 
@@ -355,7 +371,7 @@ describe('events', () => {
     // });
     const fn1 = jest.fn();
     const fn2 = jest.fn();
-    const myCache = new Cache();
+    const myCache = new Cache('event del');
 
     myCache.on('del', fn1);
     myCache.once('del', fn2);
@@ -386,7 +402,7 @@ describe('events', () => {
   it('expired', () => {
     const delFn = jest.fn();
     const expiredFn = jest.fn();
-    const myCache = new Cache({ stdTTL: 1000 });
+    const myCache = new Cache('event expired', { stdTTL: 1000 });
 
     myCache.on('del', delFn);
     myCache.on('expired', expiredFn);
@@ -426,7 +442,7 @@ describe('use cache key & storage', () => {
 
   it('mock localStorage or sessionStorage', () => {
     const cache: Record<string, any> = {};
-    const myCache = new Cache('test', {
+    const myCache = new Cache('test2', {
       storage: {
         setItem(key, value) {
           cache[key] = value;
@@ -455,7 +471,7 @@ describe('use cache key & storage', () => {
 
   it('mock wx snycStorage needParsed=false', () => {
     const cache: Record<string, any> = {};
-    const myCache = new Cache('test', {
+    const myCache = new Cache('test3', {
       storage: {
         setItem(key, value) {
           cache[key] = value;
@@ -474,7 +490,7 @@ describe('use cache key & storage', () => {
   });
 
   it('unsopported storage', () => {
-    const myCache = new Cache('test', {
+    const myCache = new Cache('test4', {
       storage: {} as any
     });
     expect(myCache.set('num', o.num)).toEqual(true);
@@ -484,7 +500,7 @@ describe('use cache key & storage', () => {
   it('storage setItem throw  error', () => {
     const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(jest.fn);
 
-    const myCache = new Cache('test', {
+    const myCache = new Cache('test5', {
       storage: {
         setItem() {
           throw 'some error';
@@ -506,7 +522,7 @@ describe('use cache key & storage', () => {
   it('storage removeItem throw  error', () => {
     const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(jest.fn);
 
-    const myCache = new Cache('test', {
+    const myCache = new Cache('test6', {
       storage: {
         setItem() {
           return '';

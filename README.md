@@ -83,11 +83,11 @@ local.get('foo');
 | maxStrategy | 当达到最大缓存数量限制时的缓存策略。<br/>`'limited'` 表示达到限制数量后不存入数据，保存时返回 `false` 。<br/> `'replaced'` 表示优先替换快过期的数据，如果都是一样的过期时间(0)，按照先入先出规则处理，保存时始终返回 `true` 。 | `'limited' \| 'replaced'` | `'limited'` |
 | stdTTL | 相对当前时间的数据存活时间，应用于当前实例的所有缓存数据。单位为毫秒，`0` 表示无期限。 | `number` | `0` |
 | checkperiod | 定时检查过期数据，单位毫秒。如果小于等于 `0` 表示不启动定时器检查。 | `number` | `0` |
-| prefix | 命名空间缓存键前缀。 | `string` | `cache2_` |
+| prefix | 缓存键前缀。 | `string` | `cache2_` |
 | storage | 自定义数据存储器，支持 `localStorage` `sessionStorage` 。默认使用内存缓存。 | `TStorage` | - |
 | needParsed | 存取数据时是否需要解析和序列化数据。如果使用内存缓存，默认为 `false` ，如果自定义 storage 默认为 `true` 。 | `boolean` | - |
-| replacer | 仅在自定义数据存储器后生效。同 [JSON.stringify](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) 的 replacer。 | `(this: any, key: string, value: any) => any` | - |
-| reviver | 仅在自定义数据存储器后生效。同 [JSON.parse](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse) 的 reviver。 | `(this: any, key: string, value: any) => any` | - |
+| replacer | 仅在自定义数据存储器后生效。同 [JSON.stringify](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) 的 replacer。 | `(key: string, value: any) => any` | - |
+| reviver | 仅在自定义数据存储器后生效。同 [JSON.parse](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse) 的 reviver。 | `(key: string, value: any) => any` | - |
 
 ## 实例方法
 

@@ -21,20 +21,26 @@ describe('Storage', () => {
     expect(session.get('b')).toBeNull();
   });
 
-  it('内存缓存前缀为空字符串', () => {
-    const memoryStorage1 = new Storage(undefined, {
-      prefix: ''
-    });
+  it('相同的内存缓存域', () => {
+    const memoryStorage1 = new Storage();
     const memoryStorage2 = new Storage();
+
+    memoryStorage1.set('a', 1);
+    expect(memoryStorage1.get('a')).toBe(1);
+    expect(memoryStorage2.get('a')).toBe(1);
+
+    memoryStorage2.set('a', 2);
+    expect(memoryStorage1.get('a')).toBe(2);
+    expect(memoryStorage2.get('a')).toBe(2);
+  });
+
+  it('不同的内存缓存域', () => {
+    const memoryStorage1 = new Storage(undefined, { memoryScope: 'n1' });
+    const memoryStorage2 = new Storage(undefined, { memoryScope: 'n2' });
 
     memoryStorage1.set('a', 1);
     memoryStorage2.set('a', 2);
     expect(memoryStorage1.get('a')).toBe(1);
     expect(memoryStorage2.get('a')).toBe(2);
-
-    // @ts-ignore
-    expect(memoryStorage1.getKey('a')).toBe('a');
-    // @ts-ignore
-    expect(memoryStorage2.getKey('a')).not.toBe('a');
   });
 });
