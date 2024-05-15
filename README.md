@@ -34,7 +34,7 @@ pnpm add cache2
 ```typescript
 import { Cache } from 'cache2';
 
-const myCache = new Cache(options);
+const myCache = new Cache(options); // 默认命名空间为 'default'，等同于 new Cache('default', options)
 
 myCache.set(key, value, ttl?);
 myCache.get(key);
@@ -74,6 +74,8 @@ local.del('foo');
 local.get('foo');
 // undefined
 ```
+
+<mark>**⚠️ 注意：同一个命名空间的缓存是共享的。意味着命名空间名称相同的情况下，不同实例之间共用同一份缓存数据。建议自定义命名空间名称，避免不同实例的缓存数据冲突**</mark>
 
 ## Cache 配置项
 
