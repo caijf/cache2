@@ -95,7 +95,7 @@ local.get('foo');
 
 ```typescript
 import { Cache } from 'cache2';
-const myCache = new Cache();
+const myCache = new Cache(namespace?, options?);
 ```
 
 ### set(key: string, value: any, ttl?: number)
@@ -340,7 +340,7 @@ myCache.on('expired', (key, value) => {
 ```typescript
 import { Cache } from 'cache2';
 
-const responseCache = new Cache({ max: 10, maxStrategy: 'replaced' });
+const responseCache = new Cache('namespace', { max: 10, maxStrategy: 'replaced' });
 // ...
 ```
 
@@ -349,7 +349,7 @@ const responseCache = new Cache({ max: 10, maxStrategy: 'replaced' });
 ```typescript
 import { Cache } from 'cache2';
 
-const fileCache = new Cache({ max: 20, maxStrategy: 'replaced' });
+const fileCache = new Cache('namespace', { max: 20, maxStrategy: 'replaced' });
 fileCache.on('del', (key, value) => {
   URL.revokeObjectURL(value);
 });
@@ -362,7 +362,7 @@ fileCache.set(fssid, URL.createObjectURL(file));
 ```typescript
 import { Cache } from 'cache2';
 
-const localCache = new Cache('storageKey', {
+const localCache = new Cache({
   storage: localStorage,
   stdTTL: 5 * 60 * 1000 // 默认数据留存时间为5分钟
 });
@@ -391,7 +391,7 @@ const wxStorage = {
     wx.removeStorageSync(key);
   }
 };
-const wxCache = new Cache('storageKey', {
+const wxCache = new Cache('namespace', {
   storage: wxStorage,
   needParsed: false,
   stdTTL: 5 * 60 * 1000 // 设置默认数据留存时间为5分钟
