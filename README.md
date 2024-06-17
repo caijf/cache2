@@ -401,5 +401,27 @@ wxCache.set('num', 1); // 该数据默认留存5分钟
 wxCache.set('str', 'foo', 10 * 60 * 1000); // 该数据留存10分钟
 ```
 
+### 使用对象作为缓存键
+
+可以单独实现一个获取缓存键的方法。
+
+```typescript
+const wm = new WeakMap();
+const getCacheKey = (obj: string | Blob) => {
+  if (typeof obj === 'string') {
+    return obj;
+  }
+  if (!wm.get(obj)) {
+    wm.set(obj, uniqueId());
+  }
+  return wm.get(obj) as string;
+};
+
+const myCache = new Cache('namespace');
+
+myCache.set(getCacheKey(someKey), someValue);
+myCache.get(getCacheKey(someKey));
+```
+
 [npm]: https://img.shields.io/npm/v/cache2.svg
 [npm-url]: https://npmjs.com/package/cache2
