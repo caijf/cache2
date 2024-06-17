@@ -57,15 +57,16 @@ myCache.get(key);
 
 ### 浏览器存储
 
-如果你不需要命名空间、控制数据存活时间和最大数量，可以使用下列几个 API ：
+如果你只需要简单的浏览器存储，不需要命名空间、控制数据存活时间和最大数量，可以使用 `Storage` 。
+
+`Storage` 内部做了一些处理，比如存储数据时自动序列化，读取数据自动解析。其余行为如同传入的浏览器存储 API 。注意，方法名称是 `get` `set` `del` 而不是 `getItem` `setItem` `removeItem` 。
 
 ```typescript
-import { local, session } from 'cache2';
+import { Storage } from 'cache2';
 
-// local 使用浏览器的 window.localStorage
-// session 使用浏览器的 window.sessionStorage
-// 内部做了一些处理，比如存储数据自动序列化，读取数据自动解析
-// local session 不具备 Cache 的数据存活时间控制
+// const session = new Storage(window.sessionStorage);
+const local = new Storage(window.localStorage);
+
 local.set('foo', { a: 1, b: ['bar'], c: ['x', 2, 3] });
 local.get('foo');
 // { a: 1, b: ['bar'], c: ['x', 2, 3] }
