@@ -9,7 +9,7 @@
 - 支持最大缓存数量，及限制数量后再添加缓存数据的不同策略
 - 支持过期时间，当前实例或单个数据的过期时间
 - 支持自定义缓存，比如 `localStorage` `sessionStorage`
-- 提供简单的浏览器存储 `local` `session`
+- 提供简单的浏览器存储 `Storage` 类，内部处理序列化和解析
 
 ## 使用
 
@@ -64,16 +64,14 @@ myCache.get(key);
 ```typescript
 import { Storage } from 'cache2';
 
-// const session = new Storage(window.sessionStorage);
+// const session = new Storage(window.sessionStorage); // 使用方法同 local
 const local = new Storage(window.localStorage);
 
 local.set('foo', { a: 1, b: ['bar'], c: ['x', 2, 3] });
-local.get('foo');
-// { a: 1, b: ['bar'], c: ['x', 2, 3] }
+local.get('foo'); // { a: 1, b: ['bar'], c: ['x', 2, 3] }
 
 local.del('foo');
-local.get('foo');
-// undefined
+local.get('foo'); // undefined
 ```
 
 <mark>**⚠️ 注意：同一个命名空间的缓存是共享的。意味着命名空间名称相同的情况下，不同实例之间共用同一份缓存数据。建议自定义命名空间名称，避免不同实例的缓存数据冲突**</mark>

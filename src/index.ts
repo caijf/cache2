@@ -1,7 +1,6 @@
 import Cache, { CacheOptions } from './Cache';
 import { Storage, StorageOptions } from './Storage';
-import local from './local';
-import session from './session';
+import { TStorage } from './interface';
 
-export { Cache, CacheOptions, Storage, StorageOptions, local, session };
+export { Cache, CacheOptions, Storage, StorageOptions, TStorage };
 export default Cache;

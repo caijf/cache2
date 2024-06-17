@@ -1,4 +1,9 @@
-import { local, session, Storage } from '../src';
+import { Storage } from '../src';
+
+const inWindow =
+  typeof window !== 'undefined' && typeof window === 'object' && window.window === window;
+const local = new Storage(inWindow ? window.localStorage : undefined);
+const session = new Storage(inWindow ? window.sessionStorage : undefined);
 
 describe('Storage', () => {
   it('basic', () => {

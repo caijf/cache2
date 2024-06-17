@@ -49,6 +49,3 @@ export function parse(value: any, reviver?: JSON_Parse_reviver) {
 export function stringify(value: any, replacer?: JSON_Stringify_replacer) {
   return JSON.stringify(value, replacer);
 }
-
-export const inWindow =
-  typeof window !== 'undefined' && typeof window === 'object' && window.window === window;
