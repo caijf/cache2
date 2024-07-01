@@ -405,10 +405,12 @@ wxCache.set('str', 'foo', 10 * 60 * 1000); // 该数据留存10分钟
 可以单独实现一个获取缓存键的方法。
 
 ```typescript
+import { isObject } from 'ut2';
+
 const wm = new WeakMap();
 const getCacheKey = (obj: string | Blob) => {
-  if (typeof obj === 'string') {
-    return obj;
+  if (!isObject(obj)) {
+    return String(obj);
   }
   if (!wm.get(obj)) {
     wm.set(obj, uniqueId());
