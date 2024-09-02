@@ -116,7 +116,7 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
   get(key: string) {
     const data = this.cacheValues[key];
     if (data && this._check(key, data)) {
-      return data.v;
+      return data.v as ValueType;
     }
     return;
   }
@@ -255,7 +255,7 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
     const data = cacheValues[key];
 
     if (data && this._check(key, data)) {
-      return cacheValues[key].t;
+      return cacheValues[key].t as number;
     }
     return;
   }
@@ -268,7 +268,7 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
     const data = cacheValues[key];
 
     if (data && this._check(key, data)) {
-      return cacheValues[key].n;
+      return cacheValues[key].n as number;
     }
     return;
   }
