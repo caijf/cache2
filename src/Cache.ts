@@ -1,5 +1,4 @@
 import Emitter from 'emitter-pro';
-import { getUniqueId } from './utils';
 import { TStorage } from './interface';
 import { Storage, StorageOptions } from './Storage';
 
@@ -19,7 +18,6 @@ export type CacheOptions = Omit<StorageOptions, 'memoryScope'> & {
   stdTTL: number; // 数据存活时间，单位为毫秒，默认0。0表示无期限。
   checkperiod: number; // 定时检查过期数据，单位毫秒。默认 0 。
   storage: TStorage; // 自定义数据存储器。支持 localStorage/sessionStorage 。
-  prefix: string; // 缓存键前缀。
 };
 
 class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => void> {
@@ -37,7 +35,7 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
     let ns = defaultNamespace,
       opts: CacheOptions | undefined;
     if (typeof namespace === 'string') {
-      ns = namespace;
+      ns = namespace || defaultNamespace;
     } else if (typeof namespace === 'object') {
       opts = namespace;
     }
@@ -56,10 +54,10 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
     };
     this.storage = new Storage(this.options.storage, {
       memoryScope: ns,
-      ...opts
+      ...this.options
     });
 
-    this.cacheKey = (this.options.prefix || '') + (ns || '') || getUniqueId();
+    this.cacheKey = ns;
     this.startCheckperiod();
   }
 

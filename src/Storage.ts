@@ -7,9 +7,10 @@ export type StorageOptions = {
   replacer: JSON_Stringify_replacer; // 仅在自定义数据存储器后生效。同 JSON.stringify 的 replacer
   reviver: JSON_Parse_reviver; // 仅在自定义数据存储器后生效。同 JSON.parse 的 reviver
   memoryScope?: string; // 内存缓存域
+  prefix?: string; // 缓存键前缀
 };
 
-export class Storage {
+export class Storage<DataType = any> {
   private storage: TStorage;
   private options: Partial<StorageOptions>;
 
@@ -17,23 +18,29 @@ export class Storage {
     const isSupported = storage ? isStorageSupported(storage) : false;
     this.options = {
       needParsed: isSupported,
+      prefix: '',
       ...options
     };
 
     this.storage = isSupported ? storage! : new MemoryStorage(this.options.memoryScope);
   }
-  get(key: string) {
-    const data = this.storage.getItem(key);
+
+  protected getKey(key: string) {
+    return this.options.prefix + key;
+  }
+
+  get(key: string): DataType {
+    const data = this.storage.getItem(this.getKey(key));
     return this.options.needParsed ? parse(data, this.options.reviver) : data;
   }
-  set(key: string, data: any) {
+  set(key: string, data: DataType) {
     this.storage.setItem(
-      key,
+      this.getKey(key),
       this.options.needParsed ? stringify(data, this.options.replacer) : data
     );
   }
   del(key: string) {
-    this.storage.removeItem(key);
+    this.storage.removeItem(this.getKey(key));
   }
   clear() {
     if (typeof this.storage.clear === 'function') {

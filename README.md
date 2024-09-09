@@ -74,6 +74,25 @@ local.del('foo');
 local.get('foo'); // undefined
 ```
 
+### Storage 配置
+
+```typescript
+export type StorageOptions = {
+  needParsed: boolean; // 存取数据时是否需要解析和序列化数据。如果使用内存缓存，默认为 false ，如果自定义 storage 默认为 true。
+  replacer: JSON_Stringify_replacer; // 仅在自定义数据存储器后生效。同 JSON.stringify 的 replacer
+  reviver: JSON_Parse_reviver; // 仅在自定义数据存储器后生效。同 JSON.parse 的 reviver
+  prefix?: string; // 缓存键前缀
+};
+
+export declare class Storage<DataType = any> {
+  constructor(storage?: TStorage, options?: Partial<StorageOptions>);
+  get(key: string): DataType;
+  set(key: string, data: DataType): void;
+  del(key: string): void;
+  clear(): void;
+}
+```
+
 <mark>**⚠️ 注意：同一个命名空间的缓存是共享的。意味着命名空间名称相同的情况下，不同实例之间共用同一份缓存数据。建议自定义命名空间名称，避免不同实例的缓存数据冲突**</mark>
 
 ## Cache 配置项

@@ -5,14 +5,6 @@ function randomString() {
   return Math.random().toString(16).substring(2, 8);
 }
 
-// 内部自增id
-let uid = 1;
-
-// 返回唯一标识
-export function getUniqueId() {
-  return `${randomString()}_${uid++}`;
-}
-
 // 是否支持 storage
 export function isStorageSupported(storage: TStorage) {
   try {
@@ -23,7 +15,7 @@ export function isStorageSupported(storage: TStorage) {
       !!storage.getItem &&
       !!storage.removeItem;
     if (isSupport) {
-      const key = getUniqueId();
+      const key = randomString() + new Date().getTime();
       const value = '1';
       storage.setItem(key, value);
       if (storage.getItem(key) !== value) {

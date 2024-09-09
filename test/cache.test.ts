@@ -137,7 +137,7 @@ describe('namespace', () => {
       storage: customStorage
     });
     // @ts-ignore
-    expect(myCache.cacheKey).toBe('cache2_default');
+    expect(myCache.cacheKey).toBe('default');
 
     const myCache2 = new Cache({
       prefix: ''
@@ -149,7 +149,7 @@ describe('namespace', () => {
       prefix: ''
     });
     // @ts-expect-error
-    expect(myCache3.cacheKey.length).toBe(8);
+    expect(myCache3.cacheKey.length).toBe(7);
   });
 
   it('same namespace', () => {

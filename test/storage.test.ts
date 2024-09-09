@@ -48,4 +48,17 @@ describe('Storage', () => {
     expect(memoryStorage1.get('a')).toBe(1);
     expect(memoryStorage2.get('a')).toBe(2);
   });
+
+  it('prefix', () => {
+    const store1 = new Storage();
+
+    // @ts-ignore
+    expect(store1.getKey('abc')).toBe('abc');
+
+    const store2 = new Storage(undefined, {
+      prefix: 'cache2'
+    });
+    // @ts-ignore
+    expect(store2.getKey('abc')).toBe('cache2abc');
+  });
 });
