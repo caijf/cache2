@@ -4,6 +4,8 @@
 
 一个简单的 JavaScript 缓存管理，支持浏览器端和 node 端。
 
+主要包含 2 个类：
+
 - [Storage](#storage) - 基本的数据存储管理，支持 `自定义缓存`。
 - [Cache](#cache) - 功能丰富的数据存储管理，支持 `自定义缓存` `命名空间` `数据过期时间` `限制缓存数量` `自定义事件`。
 
@@ -177,7 +179,7 @@ local.get('foo');
 
 清除存储的所有键。
 
-_⚠️注意：该方法调用 `storage.clear()`，可能会将同域下的不同实例的所有键都清除。如果要避免这种情况，建议使用 `import { Cache } 'cache2'`。_
+_⚠️注意：该方法调用 `storage.clear()`，可能会将同域下的不同实例的所有键都清除。如果要避免这种情况，建议使用 [Cache](#cache)。_
 
 ```typescript
 const local = new Storage(window.localStorage);
