@@ -86,6 +86,7 @@
     "tslib": "^2.6.2"
   },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest-2"
   }
 }
