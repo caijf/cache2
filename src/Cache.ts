@@ -171,10 +171,10 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * myCache.get('myKey2');
    * // undefined
    */
-  get(key: string) {
+  get<T extends ValueType = ValueType>(key: string) {
     const data = this.cacheValues[key];
     if (data && this._check(key, data)) {
-      return data.v as ValueType;
+      return data.v as T;
     }
     return;
   }
@@ -197,8 +197,8 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * //   myKey2: { a: 1, b: 2 }
    * // }
    */
-  mget(keys: string[]) {
-    const ret: Record<string, ValueType> = {};
+  mget<T extends ValueType = ValueType>(keys: string[]) {
+    const ret: Record<string, T> = {};
     if (!Array.isArray(keys)) {
       return ret;
     }
@@ -230,9 +230,9 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * //   myKey3: 'abc'
    * // }
    */
-  getAll() {
+  getAll<T extends ValueType = ValueType>() {
     const keys = Object.keys(this.cacheValues);
-    return this.mget(keys);
+    return this.mget<T>(keys);
   }
 
   /**
@@ -248,7 +248,7 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * myCache.set('myKey', { foo: 'bar', baz: 42 }, 5 * 60 * 1000);
    * // true
    */
-  set(key: string, value: ValueType, ttl?: number) {
+  set<T extends ValueType = ValueType>(key: string, value: T, ttl?: number) {
     if (this.options.max === 0) {
       return false;
     }
@@ -290,7 +290,7 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * ]);
    * // true
    */
-  mset(keyValueSet: { key: string; value: ValueType; ttl?: number }[]) {
+  mset<T extends ValueType = ValueType>(keyValueSet: { key: string; value: T; ttl?: number }[]) {
     // 该处不使用数组 some 方法，是因为不能某个失败，而导致其他就不在更新。
     let ret = true;
     keyValueSet.forEach((item) => {
@@ -396,8 +396,8 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * myCache.take('myKey'); // 'myValue'
    * myCache.has('myKey'); // false
    */
-  take(key: string) {
-    let ret: ValueType | undefined;
+  take<T extends ValueType = ValueType>(key: string) {
+    let ret: T | undefined;
     const data = this.cacheValues[key];
     if (data && this._check(key, data)) {
       ret = data.v;

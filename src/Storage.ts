@@ -83,7 +83,7 @@ export class Storage<ValueType = any> {
    * local.get('foo');
    * // { baz: 42 }
    */
-  get(key: string): ValueType | null {
+  get<T extends ValueType = ValueType>(key: string): T | null {
     const value = this.storage.getItem(this.getKey(key));
     return this.options.needParsed ? parse(value, this.options.reviver) : value;
   }
@@ -99,7 +99,7 @@ export class Storage<ValueType = any> {
    * local.get('foo');
    * // { baz: 42 }
    */
-  set(key: string, value: ValueType) {
+  set<T extends ValueType = ValueType>(key: string, value: T) {
     this.storage.setItem(
       this.getKey(key),
       this.options.needParsed ? stringify(value, this.options.replacer) : value

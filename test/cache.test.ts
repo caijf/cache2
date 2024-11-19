@@ -106,7 +106,7 @@ describe('basic', () => {
   });
 
   it('multiple set', () => {
-    const res = myCache.mset([
+    const res = myCache.mset<any>([
       { key: 'undef', value: o.undef },
       { key: 'str', value: o.str },
       { key: 'obj', value: o.obj }
@@ -379,7 +379,7 @@ describe('events', () => {
     expect(fn1).toHaveBeenCalledTimes(0);
     expect(fn2).toHaveBeenCalledTimes(0);
 
-    myCache.mset([
+    myCache.mset<any>([
       { key: 'undef', value: o.undef },
       { key: 'obj', value: o.obj },
       { key: 'str', value: o.str },
