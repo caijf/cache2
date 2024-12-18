@@ -5,9 +5,7 @@
   "scripts": {
     "test": "jest --verbose",
     "test:coverage": "jest --verbose --coverage",
-    "build": "rm -rf dist && npm run build:module && npm run build:umd && npm run build:types",
-    "build:module": "rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
-    "build:umd": "rollup --config rollup.umd.config.ts --configPlugin @rollup/plugin-typescript",
+    "build": "rm -rf dist && rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript && npm run build:types",
     "build:types": "rm -rf types && tsc -p tsconfig.types.json",
     "prettier": "prettier --write \"**/*.{js,jsx,tsx,ts,less,md,json}\"",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx src",
