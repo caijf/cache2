@@ -24,7 +24,8 @@ export function isStorageSupported(storage: TStorage) {
       storage.removeItem(key);
     }
     return isSupport;
-  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
     console.error(`[cache2] ${storage} is not supported. The default memory cache will be used.`);
     return false;
   }
@@ -33,7 +34,8 @@ export function isStorageSupported(storage: TStorage) {
 export function parse(value: any, reviver?: JSON_Parse_reviver) {
   try {
     return JSON.parse(value, reviver);
-  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
     return value;
   }
 }
