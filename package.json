@@ -22,6 +22,7 @@
   "main": "dist/cache2.cjs.js",
   "module": "dist/cache2.esm.js",
   "unpkg": "dist/cache2.min.js",
+  "browser": "dist/cache2.min.js",
   "types": "types/index.d.ts",
   "config": {
     "commitizen": {
