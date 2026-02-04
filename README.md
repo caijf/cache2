@@ -13,7 +13,7 @@
 
 ### 安装
 
-#### module
+#### es/cjs
 
 ```shell
 npm install cache2
@@ -31,7 +31,10 @@ pnpm add cache2
 
 如果你的项目使用的是原生方式开发，可以在浏览器中使用 `script` 标签直接引入文件，并使用全局变量 `cache2`。
 
-`npm` 包的 [cache2/dist](https://www.npmjs.com/package/cache2?activeTab=code) 目录下提供了 `UMD` 包 `cache2.js` 以及 `cache2.min.js`。你也可以通过 [UNPKG](https://unpkg.com/browse/cache2/dist/) 下载到本地进行使用。或者直接使用 [UNPKG 线上版本](https://unpkg.com/cache2/dist/cache2.min.js)<sup> _注意版本_ </sup>。
+`npm` 包的 [cache2/dist](https://www.npmjs.com/package/cache2?activeTab=code) 目录下提供了 `UMD` 包 `cache2.js` 以及 `cache2.min.js`。你也可以直接使用`cdn`：
+
+- jsdelivr: <https://cdn.jsdelivr.net/npm/cache2@3>
+- unpkg: <https://unpkg.com/cache2@3>
 
 ### 示例
 
@@ -231,7 +234,7 @@ const session2 = new Storage('namespace', { storage: window.sessionStorage });
 | reviver | 数据获取时转换的参数，透传给 [JSON.parse](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse) 的 `reviver` 参数。<br/>仅在 `needParsed=true` 时生效。 | `(key: string, value: any) => any` | - |
 | prefix | 缓存键前缀。 | `string` | `cache2_` |
 
-<mark>**⚠️ 注意：同一个命名空间的缓存是共享的。意味着命名空间名称相同的情况下，不同实例之间共用同一份缓存数据。建议自定义命名空间名称，避免不同实例的缓存数据冲突**</mark>
+<mark>⚠️ 注意：同一个命名空间的缓存是共享的。意味着命名空间名称相同的情况下，不同实例之间共用同一份缓存数据。建议自定义命名空间名称，避免不同实例的缓存数据冲突</mark>
 
 ### Cache 实例方法
 
