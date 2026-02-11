@@ -133,13 +133,17 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
     return this.options.max > -1 && len >= this.options.max;
   }
 
+  /**
+   * 获取替换键，用于缓存满策略。
+   *
+   * @param keys 缓存键数组
+   * @param cacheValues 缓存数据记录
+   * @returns 替换键
+   */
   private _getReplaceKey(keys: string[], cacheValues: CacheRecord<ValueType>) {
     let retkey = keys[0];
     keys.forEach((key) => {
-      if (
-        cacheValues[key].t < cacheValues[retkey].t ||
-        (cacheValues[key].t === cacheValues[retkey].t && cacheValues[key].n < cacheValues[retkey].n)
-      ) {
+      if (cacheValues[retkey].n > cacheValues[key].n) {
         retkey = key;
       }
     });
@@ -274,14 +278,15 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
 
     // 当前不存在该键值，并且数据量超过最大限制
     if (!cacheValues[key] && this._isLimited(keys.length)) {
+      // 排除过期数据的keys，如果还是超过最大限制，根据策略处理
       const validKeys = this.keys();
       if (this._isLimited(validKeys.length)) {
-        // 如果最大限制策略是替换，将优先替换快过期的数据，如果都是一样的过期时间(0)，按照先入先出规则处理。
+        // 替换策略，将优先替换先存入的数据。
         if (this.options.maxStrategy === 'replaced') {
           const replaceKey = this._getReplaceKey(validKeys, cacheValues);
           this.del(replaceKey);
         } else {
-          // 如果是最大限制策略是不允许添加，返回 false 。
+          // 不允许添加，直接返回 false 。
           return false;
         }
       }

@@ -226,7 +226,7 @@ const session2 = new Storage('namespace', { storage: window.sessionStorage });
 | --- | --- | --- | --- |
 | storage | 自定义数据存储器，支持 `localStorage` `sessionStorage`。默认使用内置的内存缓存。 | `TStorage` | - |
 | max | 最大缓存数据数量。`-1` 表示无限制。 | `number` | `-1` |
-| maxStrategy | 当达到最大缓存数量限制时的缓存策略。<br/>`'limited'` 表示达到限制数量后不存入数据，保存时返回 `false`。<br/> `'replaced'` 表示优先替换快过期的数据，如果都是一样的过期时间(0)，按照先入先出规则处理，保存时始终返回 `true`。 | `'limited' \| 'replaced'` | `'limited'` |
+| maxStrategy | 当达到最大缓存数量限制时的缓存策略。<br/>`'limited'` 表示达到限制数量后不存入数据，保存时返回 `false`。<br/> `'replaced'` 表示优先替换先存入的数据，保存时返回 `true`。 | `'limited' \| 'replaced'` | `'limited'` |
 | stdTTL | 相对当前时间的数据存活时间，应用于当前实例的所有缓存数据。单位为毫秒，`0` 表示无期限。 | `number` | `0` |
 | checkperiod | 定时检查过期数据，单位毫秒。如果小于等于 `0` 表示不启动定时器检查。 | `number` | `0` |
 | needParsed | 存取数据时是否需要序列化和解析数据。<br/>如果使用内置的内存缓存，默认 `false`，如果自定义 `storage` 默认 `true`。 | `boolean` | - |

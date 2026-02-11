@@ -61,4 +61,26 @@ describe('Storage', () => {
     // @ts-ignore
     expect(store2.getKey('abc')).toBe('cache2abc');
   });
+
+  it('custom storage and no clear method', () => {
+    const o: Record<string, any> = {};
+    const store1 = new Storage({
+      getItem: (k: string) => {
+        return o[k];
+      },
+      removeItem: (k: string) => {
+        delete o[k];
+      },
+      setItem: (k: string, v: any) => {
+        o[k] = v;
+      }
+    });
+    expect(store1.get('abc')).toBeUndefined();
+    store1.set('abc', 123);
+    expect(store1.get('abc')).toBe(123);
+
+    // 不生效，因为自定义的 storage 没有实现 clear 方法
+    store1.clear();
+    expect(store1.get('abc')).toBe(123);
+  });
 });

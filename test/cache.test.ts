@@ -296,7 +296,49 @@ describe('max & maxStrategy', () => {
 
     expect(myCache.keys()).toEqual(['num', 'str']);
 
-    // 优先删除临近过期的数据 str
+    // 优先删除先存入的数据
+    expect(myCache.set('obj', o.obj)).toEqual(true);
+    expect(myCache.keys()).toEqual(['str', 'obj']);
+  });
+
+  it('replaced with ttl', () => {
+    const myCache = new Cache('replaced_with_ttl', { max: 2, maxStrategy: 'replaced' });
+    expect(myCache.set('num', o.num, 500)).toEqual(true);
+    expect(myCache.set('str', o.str)).toEqual(true);
+
+    expect(myCache.keys()).toEqual(['num', 'str']);
+
+    // 优先删除先存入的数据 num
+    expect(myCache.set('obj', o.obj)).toEqual(true);
+    expect(myCache.keys()).toEqual(['str', 'obj']);
+  });
+
+  it('replaced with expired', () => {
+    const myCache = new Cache('replaced_with_expired', { max: 2, maxStrategy: 'replaced' });
+    expect(myCache.set('num', o.num)).toEqual(true);
+    expect(myCache.set('str', o.str, 500)).toEqual(true);
+
+    expect(myCache.keys()).toEqual(['num', 'str']);
+
+    // str 将过期，数据不再超过最大限制
+    jest.advanceTimersByTime(501);
+
+    expect(myCache.set('obj', o.obj)).toEqual(true);
+    expect(myCache.keys()).toEqual(['num', 'obj']);
+  });
+
+  it('replaced with update', () => {
+    const myCache = new Cache('replaced_with_update', { max: 2, maxStrategy: 'replaced' });
+    expect(myCache.set('num', o.num)).toEqual(true);
+    expect(myCache.set('str', o.str, 500)).toEqual(true);
+
+    expect(myCache.keys()).toEqual(['num', 'str']);
+
+    // 更新 num 数据和存入时间
+    jest.advanceTimersByTime(1); // 需要 advanceTimersByTime 1 毫秒，存入时间会相同
+    myCache.set('num', o.num);
+
+    // 优先删除先存入的数据 str
     expect(myCache.set('obj', o.obj)).toEqual(true);
     expect(myCache.keys()).toEqual(['num', 'obj']);
   });
