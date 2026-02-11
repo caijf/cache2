@@ -153,9 +153,28 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
     return this.storage.get(this.cacheKey) || {};
   }
 
-  // 设置缓存数据
+  /**
+   * 设置缓存数据。
+   *
+   * @param values 缓存值
+   */
   private setCacheValues(values: CacheRecord<ValueType>) {
     this.storage.set(this.cacheKey, values);
+  }
+
+  /**
+   * 内部获取缓存对象，需要传入缓存数据记录。
+   *
+   * @param {string} key 键名称。
+   * @param {CacheRecord<ValueType>} cacheValues 缓存数据记录。
+   * @returns {*} 如果找到该值，则返回该值的缓存对象对象。如果未找到或已过期，则返回 `undefined`。
+   */
+  private _getData<T extends ValueType = ValueType>(key: string, cacheValues: CacheRecord<T>) {
+    const data = cacheValues[key];
+    if (data && this._check(key, data)) {
+      return data;
+    }
+    return;
   }
 
   /**
@@ -172,11 +191,8 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * // undefined
    */
   get<T extends ValueType = ValueType>(key: string) {
-    const data = this.cacheValues[key];
-    if (data && this._check(key, data)) {
-      return data.v as T;
-    }
-    return;
+    const data = this._getData<T>(key, this.cacheValues);
+    return data?.v;
   }
 
   /**
@@ -204,8 +220,8 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
     }
     const cacheValues = this.cacheValues;
     keys.forEach((key) => {
-      const data = cacheValues[key];
-      if (data && this._check(key, data)) {
+      const data = this._getData<T>(key, cacheValues);
+      if (data) {
         ret[key] = data.v;
       }
     });
@@ -380,8 +396,7 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * myCache.has('foo'); // true
    */
   has(key: string) {
-    const data = this.cacheValues[key];
-    return !!(data && this._check(key, data));
+    return !!this._getData(key, this.cacheValues);
   }
 
   /**
@@ -398,8 +413,8 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    */
   take<T extends ValueType = ValueType>(key: string) {
     let ret: T | undefined;
-    const data = this.cacheValues[key];
-    if (data && this._check(key, data)) {
+    const data = this._getData<T>(key, this.cacheValues);
+    if (data) {
       ret = data.v;
       this.del(key);
     }
@@ -421,12 +436,9 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * // false
    */
   ttl(key: string, ttl: number) {
-    const cacheValues = this.cacheValues;
-    const data = cacheValues[key];
-
-    if (data && this._check(key, data)) {
-      cacheValues[key] = this._wrap(data.v, ttl);
-      return true;
+    const data = this._getData(key, this.cacheValues);
+    if (data) {
+      return this.set(key, data.v, ttl);
     }
     return false;
   }
@@ -448,13 +460,8 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * myCache.getTtl('unknownKey'); // undefined
    */
   getTtl(key: string) {
-    const cacheValues = this.cacheValues;
-    const data = cacheValues[key];
-
-    if (data && this._check(key, data)) {
-      return cacheValues[key].t as number;
-    }
-    return;
+    const data = this._getData(key, this.cacheValues);
+    return data?.t;
   }
 
   /**
@@ -474,13 +481,8 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    * myCache.getLastModified('myKey'); // 1673330005000
    */
   getLastModified(key: string) {
-    const cacheValues = this.cacheValues;
-    const data = cacheValues[key];
-
-    if (data && this._check(key, data)) {
-      return cacheValues[key].n as number;
-    }
-    return;
+    const data = this._getData(key, this.cacheValues);
+    return data?.n;
   }
 
   /**
