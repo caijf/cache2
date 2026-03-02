@@ -496,14 +496,7 @@ describe('use cache key & storage', () => {
           delete cache[key];
         }
       },
-      replacer(key, value) {
-        // console.log('replacer: ', 'key: ', key, 'value: ', value, typeof value);
-        return value;
-      },
-      reviver(key, value) {
-        // console.log('reviver: ', 'key: ', key, 'value: ', value, typeof value);
-        return value;
-      }
+      needParsed: false
     });
     expect(myCache.set('num', o.num)).toEqual(true);
     expect(myCache.get('num')).toEqual(o.num);
@@ -539,13 +532,13 @@ describe('use cache key & storage', () => {
     expect(myCache.get('num')).toEqual(o.num);
   });
 
-  it('storage setItem throw  error', () => {
+  it('storage setItem throw error', () => {
     const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(jest.fn);
 
     const myCache = new Cache('test5', {
       storage: {
         setItem() {
-          throw 'some error';
+          throw new Error('setItem error');
         },
         getItem() {
           return '';
@@ -561,7 +554,7 @@ describe('use cache key & storage', () => {
     mockConsoleError.mockRestore();
   });
 
-  it('storage removeItem throw  error', () => {
+  it('Storage write test failed. The default memory cache will be used.', () => {
     const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(jest.fn);
 
     const myCache = new Cache('test6', {
@@ -575,11 +568,58 @@ describe('use cache key & storage', () => {
         removeItem() {
           throw 'some error';
         }
-      }
+      },
+      needParsed: false
     });
     expect(myCache.set('num', o.num)).toEqual(true);
     expect(myCache.get('num')).toEqual(o.num);
 
     mockConsoleError.mockRestore();
+  });
+
+  it('trigger stringify error', () => {
+    const myCache = new Cache('test7', {
+      needParsed: true
+    });
+
+    expect(() => myCache.set('num', 1n)).toThrow();
+  });
+
+  it('trigger stringify error with custom', () => {
+    const originalStringify = JSON.stringify;
+    JSON.stringify = () => {
+      throw 'stringify error';
+    };
+    const myCache = new Cache('test8', {
+      needParsed: true
+    });
+
+    expect(() => myCache.set('num', 1n)).toThrow();
+    JSON.stringify = originalStringify;
+  });
+
+  it('trigger parse run catch', () => {
+    const myCache1 = new Cache('test9');
+    const myCache2 = new Cache('test9', {
+      needParsed: true
+    });
+
+    expect(myCache1.set('num', 1n)).toEqual(true);
+    expect(myCache2.get('num')).toEqual(1n);
+  });
+
+  it('trigger parse run catch with custom', () => {
+    const originalParse = JSON.parse;
+    JSON.parse = () => {
+      throw 'parse error';
+    };
+    const myCache1 = new Cache('test10');
+    const myCache2 = new Cache('test10', {
+      needParsed: true
+    });
+
+    expect(myCache1.set('num', 1n)).toEqual(true);
+    expect(myCache2.get('num')).toEqual(1n);
+    JSON.parse = originalParse;
   });
 });

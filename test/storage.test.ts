@@ -64,17 +64,22 @@ describe('Storage', () => {
 
   it('custom storage and no clear method', () => {
     const o: Record<string, any> = {};
-    const store1 = new Storage({
-      getItem: (k: string) => {
-        return o[k];
+    const store1 = new Storage(
+      {
+        getItem: (k: string) => {
+          return o[k];
+        },
+        removeItem: (k: string) => {
+          delete o[k];
+        },
+        setItem: (k: string, v: any) => {
+          o[k] = v;
+        }
       },
-      removeItem: (k: string) => {
-        delete o[k];
-      },
-      setItem: (k: string, v: any) => {
-        o[k] = v;
+      {
+        needParsed: false
       }
-    });
+    );
     expect(store1.get('abc')).toBeUndefined();
     store1.set('abc', 123);
     expect(store1.get('abc')).toBe(123);

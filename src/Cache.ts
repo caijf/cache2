@@ -1,10 +1,7 @@
 import Emitter from 'emitter-pro';
 import { TStorage } from './interface';
 import { Storage, StorageOptions } from './Storage';
-
-// 命名空间缓存键前缀。
-const defaultPrefix = 'cache2_';
-const defaultNamespace = 'default';
+import { CACHE_DEFAULT_PREFIX, CAHCE_DEFAULT_NAMESPACE } from './utils';
 
 type CacheData<ValueType = any> = {
   v: ValueType; // value
@@ -72,10 +69,10 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
   constructor(namespace?: any, options?: any) {
     super();
 
-    let ns = defaultNamespace,
+    let ns = CAHCE_DEFAULT_NAMESPACE,
       opts: CacheOptions | undefined;
     if (typeof namespace === 'string') {
-      ns = namespace || defaultNamespace;
+      ns = namespace || CAHCE_DEFAULT_NAMESPACE;
     } else if (typeof namespace === 'object') {
       opts = namespace;
     }
@@ -89,7 +86,7 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
       stdTTL: 0,
       maxStrategy: 'limited',
       checkperiod: 0,
-      prefix: defaultPrefix,
+      prefix: CACHE_DEFAULT_PREFIX,
       ...opts
     };
     this.storage = new Storage(this.options.storage, {
