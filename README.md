@@ -213,11 +213,11 @@ const memory = new Cache();
 const memory2 = new Cache(options);
 const memory3 = new Cache('namespace', options);
 
-const local = new Storage({ storage: window.localStorage });
-const local2 = new Storage('namespace', { storage: window.localStorage });
+const local = new Cache({ storage: window.localStorage });
+const local2 = new Cache('namespace', { storage: window.localStorage });
 
-const session = new Storage({ storage: window.sessionStorage });
-const session2 = new Storage('namespace', { storage: window.sessionStorage });
+const session = new Cache({ storage: window.sessionStorage });
+const session2 = new Cache('namespace', { storage: window.sessionStorage });
 ```
 
 ### CacheOptions
