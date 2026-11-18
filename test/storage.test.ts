@@ -96,6 +96,32 @@ describe('Storage', () => {
     expect(memory.get('a')).toBeNull();
   });
 
+  it('内存缓存 clear 后同作用域实例仍共享数据', () => {
+    const storage1 = new Storage(undefined, { memoryScope: 'clear shared' });
+    const storage2 = new Storage(undefined, { memoryScope: 'clear shared' });
+    storage1.set('a', 1);
+
+    storage1.clear();
+    expect(storage2.get('a')).toBeNull(); // 清理对其他实例同样生效
+
+    storage2.set('b', 2);
+    expect(storage1.get('b')).toBe(2); // 实例间引用不分叉
+  });
+
+  it('destroy 后 clear 仅重置实例自身', () => {
+    const memory = new Storage(undefined, { memoryScope: 'clear after destroy' });
+    memory.set('a', 1);
+    memory.destroy(); // 引用计数归零，作用域已回收
+
+    memory.clear();
+    expect(memory.get('a')).toBeNull();
+
+    // 不应复活已回收的作用域：新实例为独立空存储
+    const fresh = new Storage(undefined, { memoryScope: 'clear after destroy' });
+    expect(fresh.get('a')).toBeNull();
+    fresh.destroy();
+  });
+
   it('destroy 不影响自定义 storage', () => {
     const removeItem = jest.fn();
     const storage = new Storage(

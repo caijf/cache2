@@ -58,10 +58,20 @@ class MemoryStorage {
 
   /**
    * 清空当前作用域的所有存储
+   *
+   * 注意：原地删除键，保持同作用域其他实例的引用可见性。
    */
   clear() {
-    cache[this.scope] = {};
-    this.data = cache[this.scope];
+    const data = cache[this.scope];
+    if (data) {
+      Object.keys(data).forEach((key) => {
+        delete data[key];
+      });
+      this.data = data;
+    } else {
+      // 作用域已随引用计数归零被回收（如 destroy 之后），仅重置实例自身
+      this.data = {};
+    }
   }
 
   /**
