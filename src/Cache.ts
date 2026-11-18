@@ -1,7 +1,7 @@
 import Emitter from 'emitter-pro';
 import { TStorage } from './interface';
 import { Storage, StorageOptions } from './Storage';
-import { CACHE_DEFAULT_PREFIX, CAHCE_DEFAULT_NAMESPACE } from './utils';
+import { CACHE_DEFAULT_PREFIX, CACHE_DEFAULT_NAMESPACE } from './utils';
 
 type CacheData<ValueType = any> = {
   v: ValueType; // value
@@ -69,10 +69,10 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
   constructor(namespace?: any, options?: any) {
     super();
 
-    let ns = CAHCE_DEFAULT_NAMESPACE,
+    let ns = CACHE_DEFAULT_NAMESPACE,
       opts: CacheOptions | undefined;
     if (typeof namespace === 'string') {
-      ns = namespace || CAHCE_DEFAULT_NAMESPACE;
+      ns = namespace || CACHE_DEFAULT_NAMESPACE;
     } else if (typeof namespace === 'object') {
       opts = namespace;
     }
@@ -569,6 +569,26 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    */
   stopCheckperiod() {
     clearTimeout(this._checkTimeout);
+  }
+
+  /**
+   * 销毁缓存实例。
+   *
+   * 停止定时校验过期数据，释放内置内存缓存的作用域数据（引用计数归零时回收），并移除全部事件监听。
+   *
+   * 注意：销毁后实例不可再使用。
+   *
+   * @example
+   * const myCache = new Cache({ checkperiod: 60 * 1000 });
+   * myCache.set('foo', 'bar');
+   *
+   * myCache.destroy();
+   * myCache.get('foo'); // undefined
+   */
+  destroy() {
+    this.stopCheckperiod();
+    this.storage.destroy();
+    this.offAll();
   }
 }
 

@@ -195,6 +195,17 @@ local.get('foo');
 // null
 ```
 
+#### storage.destroy()
+
+销毁存储实例。仅当底层为内置内存缓存时生效：将作用域的引用计数减一，归零后回收该作用域的数据。自定义 `storage` 对象不受影响。
+
+```typescript
+const memory = new Storage();
+memory.set('foo', { baz: 42 });
+
+memory.destroy();
+```
+
 ## Cache
 
 功能丰富的数据存储管理，支持 `自定义缓存` `命名空间` `数据过期时间` `限制缓存数量` `自定义事件`。
@@ -472,6 +483,20 @@ myCache.startCheckperiod();
 ### stopCheckperiod()
 
 停止定时校验过期数据。参考 `startCheckperiod` 示例。
+
+### destroy()
+
+销毁缓存实例：停止定时校验过期数据，释放内置内存缓存的作用域数据（引用计数归零时回收），并移除全部事件监听。
+
+_⚠️注意：销毁后实例不可再使用。_
+
+```typescript
+const myCache = new Cache({ checkperiod: 60 * 1000 });
+myCache.set('foo', 'bar');
+
+myCache.destroy();
+myCache.get('foo'); // undefined
+```
 
 ### 自定义事件
 

@@ -1,4 +1,4 @@
-import { Cache } from '../src';
+import { Cache, Storage } from '../src';
 import MemoryStorage from '../src/MemoryStorage';
 
 beforeEach(() => {
@@ -287,6 +287,20 @@ describe('max & maxStrategy', () => {
     jest.advanceTimersByTime(1001);
     expect(myCache.set('str', o.str)).toEqual(true);
     expect(myCache.keys()).toEqual(['str']);
+  });
+
+  it('limited 清理过期数据后仍超限', () => {
+    // 先创建受限实例，再写入数据，避免构造时的 keys() 提前清理过期数据
+    const myCache = new Cache('limited_writeback', { max: 1 });
+    const writer = new Cache('limited_writeback');
+    writer.set('a', o.str, 5000);
+    writer.set('b', o.num, 500);
+
+    jest.advanceTimersByTime(501); // b 过期
+
+    // 清理过期的 b 后仍达到最大限制，拒绝写入新数据，但清理结果需写回存储
+    expect(myCache.set('c', o.undef)).toEqual(false);
+    expect(myCache.keys()).toEqual(['a']);
   });
 
   it('replaced', () => {
@@ -708,5 +722,52 @@ describe('needParsed storage write back', () => {
 
     const raw = JSON.parse(store['cache2_parsed_del']);
     expect(Object.keys(raw)).toEqual([]);
+  });
+});
+
+describe('destroy', () => {
+  it('Cache.destroy 停止定时器、移除监听并回收内存作用域', () => {
+    const fn = jest.fn();
+    const myCache = new Cache('destroy', { checkperiod: 1000 });
+    myCache.on('set', fn);
+    myCache.set('num', o.num);
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBeGreaterThan(0);
+
+    myCache.destroy();
+    expect(jest.getTimerCount()).toBe(0);
+
+    // 事件监听已移除
+    myCache.set('str', o.str);
+    expect(fn).toHaveBeenCalledTimes(1);
+    // 销毁后实例不再可读原数据
+    expect(myCache.get('num')).toBeUndefined();
+
+    // 作用域数据已回收，新实例读不到旧数据
+    const myCache2 = new Cache('destroy');
+    expect(myCache2.get('num')).toBeUndefined();
+    myCache2.destroy();
+  });
+
+  it('重复 destroy 安全', () => {
+    const myCache = new Cache('destroy twice');
+    myCache.set('num', o.num);
+    myCache.destroy();
+    myCache.destroy();
+    expect(myCache.get('num')).toBeUndefined();
+  });
+
+  it('引用计数未归零时不回收作用域', () => {
+    const storage1 = new Storage(undefined, { memoryScope: 'destroy refcount' });
+    const storage2 = new Storage(undefined, { memoryScope: 'destroy refcount' });
+    storage1.set('a', 1);
+
+    storage1.destroy();
+    expect(storage2.get('a')).toBe(1);
+
+    storage2.destroy();
+    const storage3 = new Storage(undefined, { memoryScope: 'destroy refcount' });
+    expect(storage3.get('a')).toBeNull();
+    storage3.destroy();
   });
 });

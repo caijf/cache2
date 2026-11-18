@@ -5,7 +5,10 @@ const pkgName = 'cache2';
 /**缓存命名空间缓存键前缀。 */
 export const CACHE_DEFAULT_PREFIX = `${pkgName}_`;
 /**缓存默认命名空间。 */
-export const CAHCE_DEFAULT_NAMESPACE = 'default';
+export const CACHE_DEFAULT_NAMESPACE = 'default';
+
+/**缓存探测成功的存储对象，避免每次实例化都写入探测键。 */
+const supportedStorages = new WeakSet<object>();
 
 /**
  * 是否支持 storage。
@@ -14,6 +17,9 @@ export const CAHCE_DEFAULT_NAMESPACE = 'default';
  * @returns 如果支持 storage 返回 `true`，否则返回 `false`。
  */
 export function isStorageSupported(storage: TStorage) {
+  if (supportedStorages.has(storage)) {
+    return true;
+  }
   try {
     const isSupport =
       typeof storage === 'object' &&
@@ -27,6 +33,7 @@ export function isStorageSupported(storage: TStorage) {
       const value = '1';
       storage.setItem(key, value);
       storage.removeItem(key);
+      supportedStorages.add(storage);
     }
     return isSupport;
   } catch (err) {

@@ -88,4 +88,47 @@ describe('Storage', () => {
     store1.clear();
     expect(store1.get('abc')).toBe(123);
   });
+
+  it('内存缓存 clear', () => {
+    const memory = new Storage(undefined, { memoryScope: 'memory clear' });
+    memory.set('a', 1);
+    memory.clear();
+    expect(memory.get('a')).toBeNull();
+  });
+
+  it('destroy 不影响自定义 storage', () => {
+    const removeItem = jest.fn();
+    const storage = new Storage(
+      {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem
+      },
+      { needParsed: false }
+    );
+    removeItem.mockClear(); // 清除构造时的探测调用
+
+    storage.destroy();
+    expect(removeItem).not.toHaveBeenCalled();
+  });
+
+  it('重复实例化同一 storage 不再写入探测键', () => {
+    const calls: string[] = [];
+    const store = {
+      getItem() {
+        return null;
+      },
+      setItem(key: string) {
+        calls.push(key);
+      },
+      removeItem(key: string) {
+        calls.push(key);
+      }
+    };
+    new Storage(store);
+    new Storage(store);
+    // 探测键仅在首次写入（setItem + removeItem 共 2 次调用）
+    expect(calls).toHaveLength(2);
+    expect(calls[0].startsWith('___cache2_test_')).toBe(true);
+  });
 });

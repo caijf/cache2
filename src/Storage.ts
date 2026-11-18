@@ -144,4 +144,21 @@ export class Storage<ValueType = any> {
       this.storage.clear();
     }
   }
+
+  /**
+   * 销毁存储实例。
+   *
+   * 仅当底层为内置内存缓存时生效：将作用域的引用计数减一，归零后回收该作用域的数据。自定义 `storage` 对象不受影响。
+   *
+   * @example
+   * const memory = new Storage();
+   * memory.set('foo', { baz: 42 });
+   *
+   * memory.destroy();
+   */
+  destroy() {
+    if (this.storage instanceof MemoryStorage) {
+      this.storage.destroy();
+    }
+  }
 }

@@ -3,7 +3,6 @@ export type TStorage<T = any> = {
   removeItem(key: string): void;
   setItem(key: string, value: T): void;
   clear?: () => void;
-  [x: string]: any;
 };
 
 export type JSON_Parse_reviver = (this: any, key: string, value: any) => any;
