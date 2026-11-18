@@ -623,3 +623,90 @@ describe('use cache key & storage', () => {
     JSON.parse = originalParse;
   });
 });
+
+describe('needParsed storage write back', () => {
+  // 模拟 localStorage：存取时经过 JSON 序列化，每次读取返回全新的解析结果
+  const makeParsedStorage = () => {
+    const store: Record<string, string> = {};
+    return {
+      store,
+      storage: {
+        setItem(key: string, value: string) {
+          store[key] = String(value);
+        },
+        getItem(key: string) {
+          return key in store ? store[key] : null;
+        },
+        removeItem(key: string) {
+          delete store[key];
+        }
+      }
+    };
+  };
+
+  it('replaced strategy keeps storage within max', () => {
+    const { store, storage } = makeParsedStorage();
+    const myCache = new Cache('parsed_replaced', {
+      storage,
+      needParsed: true,
+      max: 2,
+      maxStrategy: 'replaced'
+    });
+
+    expect(myCache.set('num', o.num)).toEqual(true);
+    expect(myCache.set('str', o.str)).toEqual(true);
+    expect(myCache.set('obj', o.obj)).toEqual(true);
+
+    // 旧快照写回缺陷会复活被淘汰的 num，导致存储中实际存在 3 条数据
+    const raw = JSON.parse(store['cache2_parsed_replaced']);
+    expect(Object.keys(raw)).toEqual(['str', 'obj']);
+    expect(myCache.keys()).toEqual(['str', 'obj']);
+  });
+
+  it('expired entries are removed from storage on set', () => {
+    const { store, storage } = makeParsedStorage();
+    const myCache = new Cache('parsed_expired', {
+      storage,
+      needParsed: true,
+      max: 1,
+      stdTTL: 1000
+    });
+
+    expect(myCache.set('num', o.num)).toEqual(true);
+    jest.advanceTimersByTime(1500); // num 过期
+    expect(myCache.set('str', o.str)).toEqual(true);
+
+    // 旧快照写回缺陷会复活已被清理的过期数据 num
+    const raw = JSON.parse(store['cache2_parsed_expired']);
+    expect(raw['num']).toBeUndefined();
+    expect(Object.keys(raw)).toEqual(['str']);
+  });
+
+  it('limited strategy keeps storage unchanged when set fails', () => {
+    const { store, storage } = makeParsedStorage();
+    const myCache = new Cache('parsed_limited', {
+      storage,
+      needParsed: true,
+      max: 2
+    });
+
+    expect(myCache.set('num', o.num)).toEqual(true);
+    expect(myCache.set('str', o.str)).toEqual(true);
+    expect(myCache.set('obj', o.obj)).toEqual(false);
+
+    const raw = JSON.parse(store['cache2_parsed_limited']);
+    expect(Object.keys(raw)).toEqual(['num', 'str']);
+  });
+
+  it('del removes keys from parsed storage', () => {
+    const { store, storage } = makeParsedStorage();
+    const myCache = new Cache('parsed_del', { storage, needParsed: true });
+
+    myCache.set('num', o.num);
+    myCache.set('str', o.str);
+    expect(myCache.del(['num', 'str'])).toEqual(2);
+
+    const raw = JSON.parse(store['cache2_parsed_del']);
+    expect(Object.keys(raw)).toEqual([]);
+  });
+});

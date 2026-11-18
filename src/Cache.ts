@@ -28,7 +28,7 @@ export type CacheOptions = Omit<StorageOptions, 'memoryScope'> & {
  * @param {Object} [options] 配置项。可选。
  * @param {Object} [options.storage] 自定义缓存对象要包含 `getItem` `setItem` `removeItem` 方法。默认使用内置的内存缓存。
  * @param {number} [options.max=-1] 最大缓存数据数量。`-1` 表示无限制。默认 `-1`。
- * @param {'limited' | 'replaced'} [options.maxStrategy='limited'] 当达到最大缓存数量限制时的缓存策略。`limited` 表示达到限制数量后不存入数据，保存时返回 `false`。`replaced` 表示优先替换快过期的数据，如果都是一样的过期时间(0)，按照先入先出规则处理，保存时始终返回 `true`。默认 `limited`。
+ * @param {'limited' | 'replaced'} [options.maxStrategy='limited'] 当达到最大缓存数量限制时的缓存策略。`limited` 表示达到限制数量后不存入数据，保存时返回 `false`。`replaced` 表示按照先入先出规则，优先替换最早存入（最后修改时间最早）的数据，保存时始终返回 `true`。默认 `limited`。
  * @param {number} [options.stdTTL=0] 相对当前时间的数据存活时间，应用于当前实例的所有缓存数据。单位为毫秒，`0` 表示无期限。默认 `0`。
  * @param {number} [options.checkperiod=0] 定时检查过期数据，单位毫秒。如果小于等于 `0` 表示不启动定时器检查。默认 `0`。
  * @param {boolean} [options.needParsed] 存取数据时是否需要序列化和解析数据。如果使用内置的内存缓存，默认 `false`，如果自定义 `storage` 默认 `true`。
@@ -99,6 +99,16 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
   }
 
   /**
+   * 判断缓存数据是否过期。
+   *
+   * @param data 缓存数据。
+   * @returns 如果已过期返回 `true`，否则返回 `false`。
+   */
+  private _isExpired(data: CacheData) {
+    return data.t !== 0 && data.t < Date.now();
+  }
+
+  /**
    * 检查当前键值是否过期，如果过期将会自动删除。
    *
    * @param key 键名称。
@@ -107,12 +117,31 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
    */
   private _check(key: string, data: CacheData) {
     let ret = true;
-    if (data.t !== 0 && data.t < Date.now()) {
+    if (this._isExpired(data)) {
       ret = false;
       this.del(key);
       this.emit('expired', key, data.v);
     }
     return ret;
+  }
+
+  /**
+   * 从缓存数据记录中删除指定键，并派发 `del` 事件。
+   *
+   * 注意：仅修改传入的记录对象，由调用方负责写回存储。
+   *
+   * @param values 缓存数据记录。
+   * @param key 键名称。
+   * @returns 如果存在该键并删除返回 `true`，否则返回 `false`。
+   */
+  private _delFromValues(values: CacheRecord<ValueType>, key: string) {
+    const oldData = values[key];
+    if (!oldData) {
+      return false;
+    }
+    delete values[key];
+    this.emit('del', key, oldData.v);
+    return true;
   }
 
   private _wrap(value: ValueType, ttl?: number) {
@@ -275,15 +304,28 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
 
     // 当前不存在该键值，并且数据量超过最大限制
     if (!cacheValues[key] && this._isLimited(keys.length)) {
-      // 排除过期数据的keys，如果还是超过最大限制，根据策略处理
-      const validKeys = this.keys();
+      // 基于当前快照排除过期数据（就地删除），如果还是超过最大限制，根据策略处理。
+      // 注意：不能调用 `this.keys()` / `this.del()`，它们会重新读取并写回存储，
+      // 导致此处持有的旧快照最终写回时复活已删除的数据。
+      const validKeys = keys.filter((k) => {
+        const item = cacheValues[k];
+        if (this._isExpired(item)) {
+          this._delFromValues(cacheValues, k);
+          this.emit('expired', k, item.v);
+          return false;
+        }
+        return true;
+      });
       if (this._isLimited(validKeys.length)) {
         // 替换策略，将优先替换先存入的数据。
         if (this.options.maxStrategy === 'replaced') {
           const replaceKey = this._getReplaceKey(validKeys, cacheValues);
-          this.del(replaceKey);
+          this._delFromValues(cacheValues, replaceKey);
         } else {
-          // 不允许添加，直接返回 false 。
+          // 不允许添加；若清理了过期数据仍需写回存储，保持与旧行为一致。
+          if (validKeys.length < keys.length) {
+            this.setCacheValues(cacheValues);
+          }
           return false;
         }
       }
@@ -342,11 +384,8 @@ class Cache<ValueType = any> extends Emitter<(key: string, value: ValueType) => 
     let count = 0;
     const keys = Array.isArray(key) ? key : [key];
     keys.forEach((key) => {
-      if (cacheValues[key]) {
+      if (this._delFromValues(cacheValues, key)) {
         count++;
-        const oldData = cacheValues[key];
-        delete cacheValues[key];
-        this.emit('del', key, oldData.v);
       }
     });
     if (count > 0) {
