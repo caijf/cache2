@@ -24,6 +24,16 @@
   "unpkg": "dist/cache2.min.js",
   "browser": "dist/cache2.min.js",
   "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "browser": "./dist/cache2.min.js",
+      "import": "./dist/cache2.esm.js",
+      "require": "./dist/cache2.cjs.js",
+      "default": "./dist/cache2.min.js"
+    }
+  },
+  "sideEffects": false,
   "config": {
     "commitizen": {
       "path": "@commitlint/cz-commitlint"
